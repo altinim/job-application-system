@@ -1,6 +1,5 @@
 package com.example.careerify.common.security;
 
-
 import com.example.careerify.common.dto.JwtAuthenticationResponseDTO;
 import com.example.careerify.common.dto.SignInRequestDTO;
 import com.example.careerify.common.dto.SignUpRequestDTO;
@@ -9,13 +8,18 @@ import com.example.careerify.common.jwt.JwtService;
 import com.example.careerify.model.Applicant;
 import com.example.careerify.repository.ApplicantRepository;
 import com.example.careerify.service.ApplicantService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 
+import java.util.UUID;
+
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class AuthenticationService {
 
@@ -35,8 +39,16 @@ public class AuthenticationService {
                 .build();
 
         user = userService.save(user);
-        var jwt = jwtService.generateToken(user);
-        return JwtAuthenticationResponseDTO.builder().token(jwt).build();
+
+        UserDetails userDetails = userService.userDetailsService().loadUserByUsername(user.getEmail());
+
+        var jwt = jwtService.generateToken(userDetails, user.getId());
+        var refreshToken = jwtService.generateRefreshToken(user.getId());  // Generate refresh token
+
+        return JwtAuthenticationResponseDTO.builder()
+                .token(jwt)
+                .refreshToken(refreshToken)  // Return refresh token
+                .build();
     }
 
     public JwtAuthenticationResponseDTO signIn(SignInRequestDTO request) {
@@ -44,8 +56,20 @@ public class AuthenticationService {
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         var user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid email or password."));
-        var jwt = jwtService.generateToken(user);
-        return JwtAuthenticationResponseDTO.builder().token(jwt).build();
-    }
 
+        UserDetails userDetails = userService.userDetailsService().loadUserByUsername(user.getEmail());
+
+        var jwt = jwtService.generateToken(userDetails, user.getId());
+        var refreshToken = jwtService.generateRefreshToken(user.getId());  // Generate refresh token
+
+        UUID userId = jwtService.extractUserId(jwt);
+
+        // Log the userId to verify the extraction
+        log.info("Current logged-in user ID: {}", userId);
+
+        return JwtAuthenticationResponseDTO.builder()
+                .token(jwt)
+                .refreshToken(refreshToken)  // Return refresh token
+                .build();
+    }
 }

@@ -2,6 +2,7 @@ package com.example.careerify.controller;
 
 import com.example.careerify.common.dto.ApplicantRequestDTO;
 import com.example.careerify.common.dto.ApplicantResponseDTO;
+import com.example.careerify.common.jwt.JwtService;
 import com.example.careerify.service.ApplicantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -9,6 +10,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -18,11 +22,13 @@ import java.util.UUID;
 public class ApplicantController {
 
     private final ApplicantService applicantService;
-    @Autowired
-    public ApplicantController(ApplicantService applicantService) {
-        this.applicantService = applicantService;
-    }
+    private final JwtService jwtService;
 
+    @Autowired
+    public ApplicantController(ApplicantService applicantService, JwtService jwtService) {
+        this.applicantService = applicantService;
+        this.jwtService = jwtService;
+    }
 
     @PostMapping
     public ResponseEntity<Object> createApplicant(@RequestBody ApplicantRequestDTO applicantRequestDTO) {
@@ -38,7 +44,6 @@ public class ApplicantController {
         ApplicantResponseDTO applicantRequestDTO = applicantService.getApplicantById(id);
         return new ResponseEntity<>(applicantRequestDTO, HttpStatus.OK);
     }
-
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<Page<ApplicantResponseDTO>> getAllApplicants(

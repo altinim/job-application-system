@@ -27,7 +27,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private final JobPostingRepository jobPostingRepository;
     private final ApplicationMapper applicationMapper;
 
-    @Autowired
+
     public ApplicationServiceImpl(ApplicationRepository applicationRepository,
                                   ApplicantRepository applicantRepository,
                                   JobPostingRepository jobPostingRepository,

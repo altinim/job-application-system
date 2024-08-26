@@ -20,12 +20,12 @@ public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
 
-    @PostMapping("/signup")
+    @PostMapping("/sign-up")
     public JwtAuthenticationResponseDTO signUp(@RequestBody SignUpRequestDTO request) {
         return authenticationService.signUp(request);
     }
 
-    @PostMapping("/signin")
+    @PostMapping("/sign-in")
     public JwtAuthenticationResponseDTO signIn(@RequestBody SignInRequestDTO request) {
         return authenticationService.signIn(request);
     }
