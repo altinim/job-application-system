@@ -17,7 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Component
@@ -72,10 +74,13 @@ public class ApplicantServiceImpl implements ApplicantService {
     }
 
     @Override
-    public Page<ApplicantResponseDTO> getAllApplicants(Pageable pageable) {
-        Page<Applicant> applicants = applicantRepository.findAll(pageable);
-        return applicants.map(applicantMapper::mapApplicantToDTO);
+    public List<ApplicantResponseDTO> getAllApplicants() {
+        List<Applicant> applicants = applicantRepository.findAll();
+        return applicants.stream()
+                .map(applicantMapper::mapApplicantToDTO)
+                .collect(Collectors.toList());
     }
+
     @Override
     public void deleteApplicant(UUID applicantId) {
         Applicant existingApplicant = applicantRepository.findById(applicantId)

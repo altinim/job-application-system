@@ -1,12 +1,9 @@
 package com.example.careerify.service;
 
 import com.example.careerify.common.dto.EducationDTO;
-import com.example.careerify.common.dto.JobPostingResponseDTO;
 import com.example.careerify.common.mappers.EducationMapper;
 import com.example.careerify.model.Applicant;
 import com.example.careerify.model.Education;
-import com.example.careerify.model.Employeer;
-import com.example.careerify.model.JobPosting;
 import com.example.careerify.repository.ApplicantRepository;
 import com.example.careerify.repository.EducationRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -16,7 +13,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.UUID;
 
 @Service

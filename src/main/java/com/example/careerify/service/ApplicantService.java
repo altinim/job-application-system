@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface ApplicantService {
@@ -15,7 +16,7 @@ public interface ApplicantService {
     ApplicantResponseDTO getApplicantById(UUID id);
     UserDetailsService userDetailsService();
     Applicant save(Applicant newUser);
-    Page<ApplicantResponseDTO> getAllApplicants(Pageable pageable);
+    List<ApplicantResponseDTO> getAllApplicants();
     void updateApplicant(UUID id, ApplicantRequestDTO updateDTO);
     void deleteApplicant(UUID applicantId);
 

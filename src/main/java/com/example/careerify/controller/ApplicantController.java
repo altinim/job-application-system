@@ -15,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -44,14 +45,9 @@ public class ApplicantController {
         ApplicantResponseDTO applicantRequestDTO = applicantService.getApplicantById(id);
         return new ResponseEntity<>(applicantRequestDTO, HttpStatus.OK);
     }
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ResponseEntity<Page<ApplicantResponseDTO>> getAllApplicants(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-
-        PageRequest pageable = PageRequest.of(page, size);
-        Page<ApplicantResponseDTO> applicants = applicantService.getAllApplicants(pageable);
+    public ResponseEntity<List<ApplicantResponseDTO>> getAllApplicants() {
+        List<ApplicantResponseDTO> applicants = applicantService.getAllApplicants();
         return new ResponseEntity<>(applicants, HttpStatus.OK);
     }
 
