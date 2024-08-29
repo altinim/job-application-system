@@ -6,11 +6,14 @@ import com.example.careerify.service.JobPostingService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.datetime.DateFormatter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -74,11 +77,11 @@ public class JobPostingController {
     }
 
     @GetMapping("/bypostdate")
-    public ResponseEntity<List<JobPostingResponseDTO>> getJobPostingsByPostDateAfter(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate postDate) {
+    public ResponseEntity<List<JobPostingResponseDTO>> getJobPostingsByPostDateAfter(
+            @RequestParam("postDate") @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate postDate) {
         List<JobPostingResponseDTO> jobPostings = jobPostingService.getJobPostingsByPostDateAfter(postDate);
         return ResponseEntity.ok(jobPostings);
     }
-
 
 
 }

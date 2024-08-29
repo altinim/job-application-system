@@ -3,6 +3,7 @@ package com.example.careerify.service;
 import com.example.careerify.common.dto.ApplicationRequestDTO;
 import com.example.careerify.common.dto.ApplicationResponseDTO;
 import com.example.careerify.common.enums.ApplicationStatus;
+import com.example.careerify.common.jwt.JwtService;
 import com.example.careerify.common.mappers.ApplicationMapper;
 import com.example.careerify.model.Applicant;
 import com.example.careerify.model.Application;
@@ -27,26 +28,38 @@ public class ApplicationServiceImpl implements ApplicationService {
     private final JobPostingRepository jobPostingRepository;
     private final ApplicationMapper applicationMapper;
 
+    private final JwtService jwtService;
+
 
     public ApplicationServiceImpl(ApplicationRepository applicationRepository,
                                   ApplicantRepository applicantRepository,
                                   JobPostingRepository jobPostingRepository,
-                                  ApplicationMapper applicationMapper) {
+                                  ApplicationMapper applicationMapper,
+            JwtService jwtService){
         this.applicationRepository = applicationRepository;
         this.applicantRepository = applicantRepository;
         this.jobPostingRepository = jobPostingRepository;
         this.applicationMapper = applicationMapper;
+        this.jwtService = jwtService;
     }
     @Override
-    public ApplicationResponseDTO applyForAJobListing(UUID applicantId, Long jobListingId) {
+    public ApplicationResponseDTO applyForAJobListing(String authorizationHeader, Long jobListingId) {
+        // Extract applicant ID from the token
+        UUID applicantId = extractUserIdFromToken(authorizationHeader);
+
         Applicant applicant = getApplicantById(applicantId);
         JobPosting jobPosting = getJobPostingById(jobListingId);
+
         Application application = new Application();
         application.setApplicant(applicant);
         application.setJobListing(jobPosting);
 
         Application savedApplication = applicationRepository.save(application);
         return applicationMapper.mapApplicationToResponseDTO(savedApplication);
+    }
+    private UUID extractUserIdFromToken(String authorizationHeader) {
+        String token = authorizationHeader.replace("Bearer ", "");
+        return jwtService.extractUserId(token);
     }
 
     @Override

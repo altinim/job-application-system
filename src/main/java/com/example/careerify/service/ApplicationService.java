@@ -11,8 +11,7 @@ import java.util.UUID;
 
 public interface ApplicationService {
 
-    ApplicationResponseDTO applyForAJobListing(UUID applicantId, Long jobListingId);
-
+    ApplicationResponseDTO applyForAJobListing(String authorizationHeader, Long jobListingId);
     ApplicationResponseDTO getApplicationById(Long applicationId);
 
     List<ApplicationResponseDTO> getAllApplications();

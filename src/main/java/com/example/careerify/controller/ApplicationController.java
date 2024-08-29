@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/applications")
+@RequestMapping("/api/v1/applications")
 public class ApplicationController {
 
     private final ApplicationService applicationService;
@@ -24,12 +24,12 @@ public class ApplicationController {
         this.applicationService = applicationService;
     }
 
-    @PostMapping
-    public ResponseEntity<ApplicationResponseDTO> applyForAJobListing(
-            @RequestParam UUID applicantId,
-            @RequestParam Long jobListingId) {
-        ApplicationResponseDTO createdApplication = applicationService.applyForAJobListing(applicantId, jobListingId);
-        return ResponseEntity.created(URI.create("/api/applications/" + createdApplication.getId())).body(createdApplication);
+    @PostMapping("/apply/{jobListingId}")
+    public ResponseEntity<ApplicationResponseDTO> applyForJob(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @PathVariable Long jobListingId) {
+        ApplicationResponseDTO responseDTO = applicationService.applyForAJobListing(authorizationHeader, jobListingId);
+        return ResponseEntity.ok(responseDTO);
     }
 
 
