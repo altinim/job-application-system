@@ -4,8 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.util.UUID;
 import java.util.List;
+
 @Getter
 @Setter
 public class JobPostingResponseDTO {
@@ -13,9 +13,10 @@ public class JobPostingResponseDTO {
     private String title;
     private String description;
     private float salary;
-    private EmployeerDTO employer;
     private List<ApplicationResponseDTO> applications;
     private LocalDate postDate;
     private LocalDate endDate;
-
+    private String location;
+    private String category;
+    private int openPositions;
 }

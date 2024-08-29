@@ -1,5 +1,6 @@
 package com.example.careerify.service;
 
+import com.example.careerify.common.dto.JobPostingRequestDTO;
 import com.example.careerify.common.dto.JobPostingResponseDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,8 +11,7 @@ import java.util.UUID;
 
 public interface JobPostingService {
 
-    JobPostingResponseDTO createJobPosting(JobPostingResponseDTO jobPostingResponseDTO);
-    JobPostingResponseDTO createJobPostingForEmployeer(UUID employeerId, JobPostingResponseDTO jobPostingResponseDTO);
+    JobPostingResponseDTO createJobPosting(JobPostingRequestDTO jobPostingRequestDTO, String token);
 
     JobPostingResponseDTO getJobPostingById(Long jobPostingId);
 
@@ -21,9 +21,7 @@ public interface JobPostingService {
 
     Page<JobPostingResponseDTO> getAllJobPostings(Pageable pageable);
 
-    List<JobPostingResponseDTO> getAllJobPostingsByEmployerId(UUID employerId);
 
-    List<JobPostingResponseDTO> getJobPostingsByCompanyName(String companyName);
     List<JobPostingResponseDTO> getJobPostingsByPostDateAfter(LocalDate postDate);
 
     List<JobPostingResponseDTO> getJobPostingsBySalaryGreaterThan(float salary);

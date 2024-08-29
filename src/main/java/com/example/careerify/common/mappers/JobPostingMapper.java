@@ -1,5 +1,6 @@
 package com.example.careerify.common.mappers;
 
+import com.example.careerify.common.dto.JobPostingRequestDTO;
 import com.example.careerify.common.dto.JobPostingResponseDTO;
 import com.example.careerify.model.JobPosting;
 import org.modelmapper.ModelMapper;
@@ -20,8 +21,8 @@ public class JobPostingMapper {
         return modelMapper.map(jobPosting, JobPostingResponseDTO.class);
     }
 
-    public JobPosting mapDTOToJobPosting(JobPostingResponseDTO jobPostingResponseDTO) {
-        return modelMapper.map(jobPostingResponseDTO, JobPosting.class);
+    public JobPosting mapDTOToJobPosting(JobPostingRequestDTO jobPostingRequestDTO) {
+        return modelMapper.map(jobPostingRequestDTO, JobPosting.class);
     }
     public void updateJobPostingFromDTO(JobPostingResponseDTO jobPostingResponseDTO, JobPosting jobPosting) {
         modelMapper.map(jobPostingResponseDTO, jobPosting);

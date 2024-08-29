@@ -1,5 +1,6 @@
 package com.example.careerify.controller;
 
+import com.example.careerify.common.dto.JobPostingRequestDTO;
 import com.example.careerify.common.dto.JobPostingResponseDTO;
 import com.example.careerify.service.JobPostingService;
 import org.springframework.data.domain.Page;
@@ -14,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/job-postings")
+@RequestMapping("api/v1/job-postings")
 public class JobPostingController {
 
     private final JobPostingService jobPostingService;
@@ -34,20 +35,12 @@ public class JobPostingController {
     }
 
     @PostMapping
-    public ResponseEntity<JobPostingResponseDTO> createJobPosting(@RequestBody JobPostingResponseDTO jobPostingResponseDTO) {
-        JobPostingResponseDTO createdJobPosting = jobPostingService.createJobPosting(jobPostingResponseDTO);
-        return new ResponseEntity<>(createdJobPosting, HttpStatus.CREATED);
-    }
-    @PostMapping("/create/{employerId}")
-    public ResponseEntity<JobPostingResponseDTO> createJobPostingForEmployer(
-            @PathVariable UUID employerId,
-            @Valid @RequestBody JobPostingResponseDTO jobPostingResponseDTO) {
-        try {
-            JobPostingResponseDTO createdJobPosting = jobPostingService.createJobPostingForEmployeer(employerId, jobPostingResponseDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdJobPosting);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
+    public ResponseEntity<JobPostingResponseDTO> createJobPosting(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @RequestBody JobPostingRequestDTO jobPostingRequestDTO) {
+        JobPostingResponseDTO responseDTO = jobPostingService.createJobPosting(jobPostingRequestDTO, authorizationHeader);
+
+        return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
     @GetMapping("/{id}")
     public ResponseEntity<JobPostingResponseDTO> getJobPostingById(@PathVariable Long id) {
@@ -67,11 +60,7 @@ public class JobPostingController {
         return new ResponseEntity<>("Job Posting deleted successfully", HttpStatus.NO_CONTENT);
     }
 
-    @GetMapping("/employersJobPositions/{employerId}")
-    public ResponseEntity<List<JobPostingResponseDTO>> getAllJobPostingsByEmployerId(@PathVariable UUID employerId) {
-        List<JobPostingResponseDTO> jobPostings = jobPostingService.getAllJobPostingsByEmployerId(employerId);
-        return ResponseEntity.ok(jobPostings);
-    }
+
     @GetMapping("/bytitle")
     public ResponseEntity<List<JobPostingResponseDTO>> getJobPostingsByTitle(@RequestParam String keyword) {
         List<JobPostingResponseDTO> jobPostings = jobPostingService.getJobPostingsByTitle(keyword);
@@ -91,9 +80,5 @@ public class JobPostingController {
     }
 
 
-    @GetMapping("/bycompanyname")
-    public ResponseEntity<List<JobPostingResponseDTO>> getJobPostingsByCompanyName(@RequestParam String companyName) {
-        List<JobPostingResponseDTO> jobPostings = jobPostingService.getJobPostingsByCompanyName(companyName);
-        return ResponseEntity.ok(jobPostings);
-    }
+
 }
