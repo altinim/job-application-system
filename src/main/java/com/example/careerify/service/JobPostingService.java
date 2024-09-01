@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public interface JobPostingService {
 
-    JobPostingResponseDTO createJobPosting(JobPostingRequestDTO jobPostingRequestDTO, String token);
+    JobPostingResponseDTO createJobPosting(JobPostingRequestDTO jobPostingRequestDTO);
 
     JobPostingResponseDTO getJobPostingById(Long jobPostingId);
 
@@ -22,6 +22,6 @@ public interface JobPostingService {
     Page<JobPostingResponseDTO> getAllJobPostings(Pageable pageable);
 
     List<JobPostingResponseDTO> searchJobPostings(String title, Float salary, LocalDate postDate, String category, int page, int size);
-    Page<JobPostingResponseDTO> getJobPostingByCurrentEmployer(Pageable pageable, String authorizationHeader);
+    Page<JobPostingResponseDTO> getJobPostingByCurrentEmployer(Pageable pageable);
 
 }

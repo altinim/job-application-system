@@ -7,7 +7,10 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
+import com.example.careerify.model.User;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -113,6 +116,16 @@ public class JwtService {
 
         return userId;
     }
+    public UUID getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof User userDetails)) {
+            throw new RuntimeException("User not authenticated");
+        }
+
+        return userDetails.getId();
+
+    }
+
 
 
 }

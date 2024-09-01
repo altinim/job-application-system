@@ -3,20 +3,14 @@ package com.example.careerify.controller;
 import com.example.careerify.common.dto.JobPostingRequestDTO;
 import com.example.careerify.common.dto.JobPostingResponseDTO;
 import com.example.careerify.service.JobPostingService;
-import org.apache.coyote.Response;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.format.datetime.DateFormatter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
-import javax.validation.Valid;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("api/v1/job-postings")
@@ -40,21 +34,19 @@ public class JobPostingController {
 
     @PostMapping
     public ResponseEntity<JobPostingResponseDTO> createJobPosting(
-            @RequestHeader("Authorization") String authorizationHeader,
             @RequestBody JobPostingRequestDTO jobPostingRequestDTO) {
-        JobPostingResponseDTO responseDTO = jobPostingService.createJobPosting(jobPostingRequestDTO, authorizationHeader);
+        JobPostingResponseDTO responseDTO = jobPostingService.createJobPosting(jobPostingRequestDTO);
 
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
 
     @GetMapping("employer-job-listings")
     public ResponseEntity<Page<JobPostingResponseDTO>> getJobPostingByCurrentEmployer(
-            @RequestHeader("Authorization") String authorizationHeader,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
         Pageable pageable = Pageable.ofSize(size).withPage(page);
-        Page<JobPostingResponseDTO> jobPostings = jobPostingService.getJobPostingByCurrentEmployer(pageable, authorizationHeader);
+        Page<JobPostingResponseDTO> jobPostings = jobPostingService.getJobPostingByCurrentEmployer(pageable);
         return new ResponseEntity<>(jobPostings, HttpStatus.OK);
     }
 

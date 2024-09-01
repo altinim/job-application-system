@@ -4,7 +4,6 @@ import com.example.careerify.common.dto.JobPostingRequestDTO;
 import com.example.careerify.common.dto.JobPostingResponseDTO;
 import com.example.careerify.common.jwt.JwtService;
 import com.example.careerify.common.mappers.JobPostingMapper;
-import com.example.careerify.model.User;
 import com.example.careerify.model.JobPosting;
 import com.example.careerify.repository.JobPostingRepository;
 import com.example.careerify.repository.UserRepository;
@@ -25,13 +24,11 @@ public class JobPostingServiceImpl implements JobPostingService {
     private final JobPostingRepository jobPostingRepository;
     private final JobPostingMapper jobPostingMapper;
     private final JwtService jwtService;
-    private final UserRepository userRepository;
 
-    public JobPostingServiceImpl(JobPostingRepository jobPostingRepository, JobPostingMapper jobPostingMapper , JwtService jwtService, UserRepository userRepository){
+    public JobPostingServiceImpl(JobPostingRepository jobPostingRepository, JobPostingMapper jobPostingMapper , JwtService jwtService){
         this.jobPostingRepository = jobPostingRepository;
         this.jobPostingMapper = jobPostingMapper;
         this.jwtService = jwtService;
-        this.userRepository = userRepository;
     }
     @Override
     public Page<JobPostingResponseDTO> getAllJobPostings(Pageable pageable) {
@@ -39,19 +36,11 @@ public class JobPostingServiceImpl implements JobPostingService {
         return jobPostings.map(jobPostingMapper::mapJobPostingToDTO);
     }
     @Override
-    public JobPostingResponseDTO createJobPosting(JobPostingRequestDTO requestDTO, String authorizationHeader) {
-        UUID currentUserId = extractUserIdFromToken(authorizationHeader);
+    public JobPostingResponseDTO createJobPosting(JobPostingRequestDTO requestDTO) {
+        UUID currentUserId = jwtService.getCurrentUserId();
 
-        JobPosting jobPosting = new JobPosting();
-        jobPosting.setTitle(requestDTO.getTitle());
-        jobPosting.setDescription(requestDTO.getDescription());
-        jobPosting.setSalary(requestDTO.getSalary());
-        jobPosting.setPostDate(requestDTO.getPostDate());
-        jobPosting.setEndDate(requestDTO.getEndDate());
-        jobPosting.setLocation(requestDTO.getLocation());
-        jobPosting.setCategory(requestDTO.getCategory());
+        JobPosting jobPosting = jobPostingMapper.mapDTOToJobPosting(requestDTO);
         jobPosting.setEmployerId(currentUserId);
-        jobPosting.setOpenPositions(requestDTO.getOpenPositions());
 
         JobPosting savedJobPosting = jobPostingRepository.save(jobPosting);
 
@@ -103,14 +92,11 @@ public class JobPostingServiceImpl implements JobPostingService {
     }
 
     @Override
-    public Page<JobPostingResponseDTO> getJobPostingByCurrentEmployer(Pageable pageable, String authorizationHeader) {
-        UUID currentUserId = extractUserIdFromToken(authorizationHeader);
+    public Page<JobPostingResponseDTO> getJobPostingByCurrentEmployer(Pageable pageable) {
+        UUID currentUserId = jwtService.getCurrentUserId();
+
         Page<JobPosting> jobPostings = jobPostingRepository.findByEmployerId(currentUserId, pageable);
         return jobPostings.map(jobPostingMapper::mapJobPostingToDTO);
     }
 
-    private UUID extractUserIdFromToken(String authorizationHeader) {
-        String token = authorizationHeader.replace("Bearer ", "");
-        return jwtService.extractUserId(token);
-    }
 }

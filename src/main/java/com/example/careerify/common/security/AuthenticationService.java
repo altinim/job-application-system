@@ -35,7 +35,7 @@ public class AuthenticationService {
                 .lastName(request.getLastName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole() != null ? request.getRole() : Role.APPLICANT) // Use role from request
+                .role(request.getRole() != null ? request.getRole() : Role.APPLICANT)
                 .build();
 
         user = userService.save(user);
