@@ -1,7 +1,7 @@
 package com.example.careerify.config;
 
 import com.example.careerify.common.security.JwtAuthenticationFilter;
-import com.example.careerify.service.ApplicantService;
+import com.example.careerify.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,7 +24,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final ApplicantService applicantService;
+    private final UserService userService;
     private final PasswordEncoder passwordEncoder;
 
     @Bean
@@ -35,7 +35,7 @@ public class SecurityConfig {
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(applicantService.userDetailsService());
+        authProvider.setUserDetailsService(userService.userDetailsService());
         authProvider.setPasswordEncoder(passwordEncoder);
         return authProvider;
     }

@@ -21,6 +21,6 @@ public class Skill {
     private String name;
 
     @ManyToOne
-    @JoinColumn(name = "applicant_id", nullable = false)
-    private Applicant applicant;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }

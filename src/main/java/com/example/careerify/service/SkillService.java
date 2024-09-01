@@ -13,6 +13,4 @@ public interface SkillService {
     Page<SkillDTO> getAllSkills (Pageable pageable);
     void deleteSkill(UUID skillId);
 
-    SkillDTO createSkillForApplicant(UUID applicantId, SkillDTO skillDTO);
-
 }

@@ -33,17 +33,7 @@ public class SkillController {
         }
     }
 
-    @PostMapping("/create/{applicantId}")
-    public ResponseEntity<SkillDTO> createSkillForApplicant(
-            @PathVariable UUID applicantId,
-            @Valid @RequestBody SkillDTO skillDTO) {
-        try {
-            SkillDTO skillDTO1 = skillService.createSkillForApplicant(applicantId, skillDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(skillDTO1);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
-    }
+
 
 
     @GetMapping("/{id}")
