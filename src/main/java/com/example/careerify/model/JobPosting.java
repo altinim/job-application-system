@@ -25,9 +25,7 @@ public class JobPosting {
 
     private float salary;
 
-    @ManyToOne
-    @JoinColumn(name = "employeer_id", nullable = false)
-    private Applicant employeer;
+    private String createdByUserId;
 
     @OneToMany(mappedBy = "jobListing", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Application> applications;

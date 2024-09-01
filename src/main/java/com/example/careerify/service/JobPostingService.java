@@ -21,11 +21,5 @@ public interface JobPostingService {
 
     Page<JobPostingResponseDTO> getAllJobPostings(Pageable pageable);
 
-
-    List<JobPostingResponseDTO> getJobPostingsByPostDateAfter(LocalDate postDate);
-
-    List<JobPostingResponseDTO> getJobPostingsBySalaryGreaterThan(float salary);
-
-    List<JobPostingResponseDTO> getJobPostingsByTitle(String keyword);
-
+    List<JobPostingResponseDTO> searchJobPostings(String title, Float salary, LocalDate postDate, String category, int page, int size);
 }

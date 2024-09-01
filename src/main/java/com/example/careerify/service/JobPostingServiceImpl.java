@@ -12,6 +12,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -64,12 +65,6 @@ public class JobPostingServiceImpl implements JobPostingService {
         return jobPostingMapper.mapJobPostingToDTO(savedJobPosting);
     }
 
-
-    private UUID extractUserIdFromToken(String authorizationHeader) {
-        // Extract the token from the Authorization header
-        String token = authorizationHeader.replace("Bearer ", "");
-        return jwtService.extractUserId(token);
-    }
     @Override
     public JobPostingResponseDTO getJobPostingById(Long jobPostingId) {
         Optional<JobPosting> jobPostingOptional = jobPostingRepository.findById(jobPostingId);
@@ -99,30 +94,22 @@ public class JobPostingServiceImpl implements JobPostingService {
     }
 
 
-
     @Override
-    public List<JobPostingResponseDTO> getJobPostingsByTitle(String keyword) {
-        List<JobPosting> jobPostings = jobPostingRepository.findByTitleContaining(keyword);
+    public List<JobPostingResponseDTO> searchJobPostings(
+            String title, Float salary, LocalDate postDate, String category, int page, int size
+    ) {
+        Page<JobPosting> jobPostingPage = jobPostingRepository.findJobPostings(
+                title, salary, postDate, category, PageRequest.of(page, size)
+        );
+
+        List<JobPosting> jobPostings = jobPostingPage.getContent();
+
         return jobPostings.stream()
                 .map(jobPostingMapper::mapJobPostingToDTO)
                 .collect(Collectors.toList());
     }
-
-    @Override
-    public List<JobPostingResponseDTO> getJobPostingsBySalaryGreaterThan(float salary) {
-        List<JobPosting> jobPostings = jobPostingRepository.findBySalaryGreaterThan(salary);
-        return jobPostings.stream()
-                .map(jobPostingMapper::mapJobPostingToDTO)
-                .collect(Collectors.toList());
+    private UUID extractUserIdFromToken(String authorizationHeader) {
+        String token = authorizationHeader.replace("Bearer ", "");
+        return jwtService.extractUserId(token);
     }
-
-    @Override
-    public List<JobPostingResponseDTO> getJobPostingsByPostDateAfter(LocalDate postDate) {
-        List<JobPosting> jobPostings = jobPostingRepository.findByPostDateAfter(postDate);
-        return jobPostings.stream()
-                .map(jobPostingMapper::mapJobPostingToDTO)
-                .collect(Collectors.toList());
-    }
-
-
 }

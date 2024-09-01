@@ -13,6 +13,7 @@ public class JobPostingResponseDTO {
     private String title;
     private String description;
     private float salary;
+    private String createdByUserId;
     private List<ApplicationResponseDTO> applications;
     private LocalDate postDate;
     private LocalDate endDate;

@@ -3,6 +3,7 @@ package com.example.careerify.controller;
 import com.example.careerify.common.dto.JobPostingRequestDTO;
 import com.example.careerify.common.dto.JobPostingResponseDTO;
 import com.example.careerify.service.JobPostingService;
+import org.apache.coyote.Response;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -62,26 +63,18 @@ public class JobPostingController {
         jobPostingService.deleteJobPosting(id);
         return new ResponseEntity<>("Job Posting deleted successfully", HttpStatus.NO_CONTENT);
     }
-
-
-    @GetMapping("/bytitle")
-    public ResponseEntity<List<JobPostingResponseDTO>> getJobPostingsByTitle(@RequestParam String keyword) {
-        List<JobPostingResponseDTO> jobPostings = jobPostingService.getJobPostingsByTitle(keyword);
+    @GetMapping("/search")
+    public ResponseEntity<List<JobPostingResponseDTO>> searchJobPostings(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) Float salary,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate postDate,
+            @RequestParam(required = false) String category,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        List<JobPostingResponseDTO> jobPostings = jobPostingService.searchJobPostings(
+                title, salary, postDate, category, page, size
+        );
         return ResponseEntity.ok(jobPostings);
     }
-
-    @GetMapping("/bysalary")
-    public ResponseEntity<List<JobPostingResponseDTO>> getJobPostingsBySalaryGreaterThan(@RequestParam float salary) {
-        List<JobPostingResponseDTO> jobPostings = jobPostingService.getJobPostingsBySalaryGreaterThan(salary);
-        return ResponseEntity.ok(jobPostings);
-    }
-
-    @GetMapping("/bypostdate")
-    public ResponseEntity<List<JobPostingResponseDTO>> getJobPostingsByPostDateAfter(
-            @RequestParam("postDate") @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate postDate) {
-        List<JobPostingResponseDTO> jobPostings = jobPostingService.getJobPostingsByPostDateAfter(postDate);
-        return ResponseEntity.ok(jobPostings);
-    }
-
-
 }
