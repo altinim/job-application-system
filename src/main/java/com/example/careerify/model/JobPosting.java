@@ -7,6 +7,7 @@ import lombok.Setter;
 import javax.validation.constraints.Min;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table
@@ -25,7 +26,7 @@ public class JobPosting {
 
     private float salary;
 
-    private String createdByUserId;
+    private UUID employerId;
 
     @OneToMany(mappedBy = "jobListing", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Application> applications;

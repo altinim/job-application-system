@@ -4,13 +4,10 @@ import com.example.careerify.common.dto.JobPostingRequestDTO;
 import com.example.careerify.common.dto.JobPostingResponseDTO;
 import com.example.careerify.common.jwt.JwtService;
 import com.example.careerify.common.mappers.JobPostingMapper;
-import com.example.careerify.model.Applicant;
+import com.example.careerify.model.User;
 import com.example.careerify.model.JobPosting;
-import com.example.careerify.repository.ApplicantRepository;
 import com.example.careerify.repository.JobPostingRepository;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
-import lombok.NonNull;
+import com.example.careerify.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,13 +25,13 @@ public class JobPostingServiceImpl implements JobPostingService {
     private final JobPostingRepository jobPostingRepository;
     private final JobPostingMapper jobPostingMapper;
     private final JwtService jwtService;
-    private final ApplicantRepository applicantRepository;
+    private final UserRepository userRepository;
 
-    public JobPostingServiceImpl(JobPostingRepository jobPostingRepository, JobPostingMapper jobPostingMapper , JwtService jwtService, ApplicantRepository applicantRepository){
+    public JobPostingServiceImpl(JobPostingRepository jobPostingRepository, JobPostingMapper jobPostingMapper , JwtService jwtService, UserRepository userRepository){
         this.jobPostingRepository = jobPostingRepository;
         this.jobPostingMapper = jobPostingMapper;
         this.jwtService = jwtService;
-        this.applicantRepository = applicantRepository;
+        this.userRepository = userRepository;
     }
     @Override
     public Page<JobPostingResponseDTO> getAllJobPostings(Pageable pageable) {
@@ -45,21 +42,17 @@ public class JobPostingServiceImpl implements JobPostingService {
     public JobPostingResponseDTO createJobPosting(JobPostingRequestDTO requestDTO, String authorizationHeader) {
         UUID currentUserId = extractUserIdFromToken(authorizationHeader);
 
-        Applicant employeer = applicantRepository.findById(currentUserId)
-                .orElseThrow(() -> new RuntimeException("Employeer not found"));
-
         JobPosting jobPosting = new JobPosting();
         jobPosting.setTitle(requestDTO.getTitle());
         jobPosting.setDescription(requestDTO.getDescription());
         jobPosting.setSalary(requestDTO.getSalary());
         jobPosting.setPostDate(requestDTO.getPostDate());
-        jobPosting.setEmployeer(employeer);
         jobPosting.setEndDate(requestDTO.getEndDate());
         jobPosting.setLocation(requestDTO.getLocation());
         jobPosting.setCategory(requestDTO.getCategory());
+        jobPosting.setEmployerId(currentUserId);
         jobPosting.setOpenPositions(requestDTO.getOpenPositions());
 
-        // Save the JobPosting entity
         JobPosting savedJobPosting = jobPostingRepository.save(jobPosting);
 
         return jobPostingMapper.mapJobPostingToDTO(savedJobPosting);
@@ -108,6 +101,14 @@ public class JobPostingServiceImpl implements JobPostingService {
                 .map(jobPostingMapper::mapJobPostingToDTO)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public Page<JobPostingResponseDTO> getJobPostingByCurrentEmployer(Pageable pageable, String authorizationHeader) {
+        UUID currentUserId = extractUserIdFromToken(authorizationHeader);
+        Page<JobPosting> jobPostings = jobPostingRepository.findByEmployerId(currentUserId, pageable);
+        return jobPostings.map(jobPostingMapper::mapJobPostingToDTO);
+    }
+
     private UUID extractUserIdFromToken(String authorizationHeader) {
         String token = authorizationHeader.replace("Bearer ", "");
         return jwtService.extractUserId(token);

@@ -46,6 +46,18 @@ public class JobPostingController {
 
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
+
+    @GetMapping("employer-job-listings")
+    public ResponseEntity<Page<JobPostingResponseDTO>> getJobPostingByCurrentEmployer(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = Pageable.ofSize(size).withPage(page);
+        Page<JobPostingResponseDTO> jobPostings = jobPostingService.getJobPostingByCurrentEmployer(pageable, authorizationHeader);
+        return new ResponseEntity<>(jobPostings, HttpStatus.OK);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<JobPostingResponseDTO> getJobPostingById(@PathVariable Long id) {
         JobPostingResponseDTO jobPostingResponseDTO = jobPostingService.getJobPostingById(id);

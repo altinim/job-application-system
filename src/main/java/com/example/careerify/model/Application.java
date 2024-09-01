@@ -22,8 +22,8 @@ public class Application {
     private JobPosting jobListing;
 
     @ManyToOne
-    @JoinColumn(name = "applicant_id", nullable = false)
-    private Applicant applicant;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)

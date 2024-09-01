@@ -34,17 +34,6 @@ public class EducationController {
         }
     }
 
-    @PostMapping("/create/{applicantId}")
-    public ResponseEntity<EducationDTO> createEducationForApplicant(
-            @PathVariable UUID applicantId,
-            @Valid @RequestBody EducationDTO educationDTO) {
-        try {
-            EducationDTO educationDTO1 = educationService.createEducationForApplicant(applicantId, educationDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(educationDTO1);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
-    }
 
     @GetMapping
     public ResponseEntity<Page<EducationDTO>> getAllEducations(

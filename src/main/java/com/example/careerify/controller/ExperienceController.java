@@ -32,18 +32,6 @@ public class ExperienceController {
         }
     }
 
-    @PostMapping("/create/{applicantId}")
-    public ResponseEntity<ExperienceDTO> createExperienceForApplicant(
-            @PathVariable UUID applicantId,
-            @Valid @RequestBody ExperienceDTO experienceDTO) {
-        try {
-            ExperienceDTO experienceDTO1 = experienceService.createExperienceForApplicant(applicantId, experienceDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(experienceDTO1);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<Object> getExperienceById(@PathVariable UUID id) {
         ExperienceDTO experienceDTO = experienceService.getExperienceById(id);

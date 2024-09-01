@@ -10,13 +10,12 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
+
 @Repository
 public interface JobPostingRepository  extends JpaRepository<JobPosting,Long> {
-    List<JobPosting> findByTitleContainingIgnoreCase(String keyword);
-    List<JobPosting> findBySalaryGreaterThan(float salary);
-    List<JobPosting> findByPostDateAfter(LocalDate postDate);
+    Page<JobPosting> findByEmployerId(UUID employerId, Pageable pageable);
 
-     List<JobPosting> findByCategoryIgnoreCase(String category);
 
     @Query("SELECT j FROM JobPosting j WHERE "
             + "(COALESCE(:title, '') = '' OR LOWER(j.title) LIKE LOWER(CONCAT('%', :title, '%'))) AND "

@@ -22,8 +22,6 @@ public interface ApplicationService {
 
     void deleteApplication(Long applicationId);
 
-    List<ApplicationResponseDTO> getApplicationsByStatusAndApplicant(ApplicationStatus status, UUID applicantId);
-
     List<ApplicationResponseDTO> getApplicationsByJobListing(Long jobListingId);
 
 
@@ -31,11 +29,7 @@ public interface ApplicationService {
 
     long countApplicationsByStatusAndJobListing(ApplicationStatus status, Long jobListingId);
 
-    long countApplicationsByJobListingAndApplicant(Long jobListingId, UUID applicantId);
-
-    List<ApplicationResponseDTO> getApplicationsByJobListingAndApplicant(Long jobListingId, UUID applicantId);
 
     void updateApplicationStatus(Long applicationId, ApplicationStatus newStatus);
-
 
 }

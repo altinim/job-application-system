@@ -14,6 +14,5 @@ public interface ExperienceService {
     Page<ExperienceDTO> getAllExperiences (Pageable pageable);
     void deleteExperience(UUID experienceId);
     
-    ExperienceDTO createExperienceForApplicant(UUID applicantId, ExperienceDTO experienceDTO);
 
 }

@@ -2,10 +2,10 @@ package com.example.careerify.service;
 
 import com.example.careerify.common.dto.EducationDTO;
 import com.example.careerify.common.mappers.EducationMapper;
-import com.example.careerify.model.Applicant;
+import com.example.careerify.model.User;
 import com.example.careerify.model.Education;
-import com.example.careerify.repository.ApplicantRepository;
 import com.example.careerify.repository.EducationRepository;
+import com.example.careerify.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -18,12 +18,12 @@ import java.util.UUID;
 @Service
 public class EducationServiceImpl implements EducationService{
 
-    private ApplicantRepository applicantRepository;
+    private UserRepository userRepository;
     private EducationMapper educationMapper;
     private EducationRepository educationRepository;
 
-    public EducationServiceImpl(ApplicantRepository applicantRepository, EducationMapper educationMapper, EducationRepository educationRepository) {
-        this.applicantRepository = applicantRepository;
+    public EducationServiceImpl(UserRepository userRepository, EducationMapper educationMapper, EducationRepository educationRepository) {
+        this.userRepository = userRepository;
         this.educationMapper = educationMapper;
         this.educationRepository = educationRepository;
     }
@@ -38,23 +38,6 @@ public class EducationServiceImpl implements EducationService{
             return educationMapper.mapEducationToDTO(savedEducation);
         } catch (DataIntegrityViolationException e) {
             throw new RuntimeException("Error creating education. Duplicate entry.", e);
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Error creating education. Illegal argument.", e);
-        }
-    }
-    @Transactional
-    @Override
-    public EducationDTO createEducationForApplicant(UUID applicantId, EducationDTO educationDTO) {
-        try {
-            Applicant applicant = applicantRepository.findById(applicantId)
-                    .orElseThrow(() -> new EntityNotFoundException("Applicant not found with ID: " + applicantId));
-
-            Education education = educationMapper.mapDTOToEducation(educationDTO);
-            education.setApplicant(applicant);
-
-            Education savedEducation = educationRepository.save(education);
-
-            return educationMapper.mapEducationToDTO(savedEducation);
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Error creating education. Illegal argument.", e);
         }

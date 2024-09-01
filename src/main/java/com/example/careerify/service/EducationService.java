@@ -13,6 +13,5 @@ public interface EducationService {
     void updateEducation(UUID id, EducationDTO updateDTO);
     void deleteEducation(UUID educationId);
 
-    EducationDTO createEducationForApplicant(UUID applicantId, EducationDTO educationDTO);
 
 }

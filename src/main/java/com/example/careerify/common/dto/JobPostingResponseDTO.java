@@ -5,6 +5,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -13,7 +14,7 @@ public class JobPostingResponseDTO {
     private String title;
     private String description;
     private float salary;
-    private String createdByUserId;
+    private UUID employerId;
     private List<ApplicationResponseDTO> applications;
     private LocalDate postDate;
     private LocalDate endDate;

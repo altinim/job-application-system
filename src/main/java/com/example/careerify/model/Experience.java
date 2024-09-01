@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -32,7 +31,7 @@ public class Experience {
     private LocalDate endDate;
 
     @ManyToOne
-    @JoinColumn(name = "applicant_id", nullable = false)
-    private Applicant applicant;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
 }

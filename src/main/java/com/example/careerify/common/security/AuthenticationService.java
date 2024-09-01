@@ -5,9 +5,9 @@ import com.example.careerify.common.dto.SignInRequestDTO;
 import com.example.careerify.common.dto.SignUpRequestDTO;
 import com.example.careerify.common.enums.Role;
 import com.example.careerify.common.jwt.JwtService;
-import com.example.careerify.model.Applicant;
-import com.example.careerify.repository.ApplicantRepository;
-import com.example.careerify.service.ApplicantService;
+import com.example.careerify.model.User;
+import com.example.careerify.repository.UserRepository;
+import com.example.careerify.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,19 +23,19 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AuthenticationService {
 
-    private final ApplicantRepository userRepository;
-    private final ApplicantService userService;
+    private final UserRepository userRepository;
+    private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
     public JwtAuthenticationResponseDTO signUp(SignUpRequestDTO request) {
-        var user = Applicant.builder()
+        var user = User.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.ADMIN)
+                .role(request.getRole() != null ? request.getRole() : Role.APPLICANT) // Use role from request
                 .build();
 
         user = userService.save(user);
@@ -43,11 +43,11 @@ public class AuthenticationService {
         UserDetails userDetails = userService.userDetailsService().loadUserByUsername(user.getEmail());
 
         var jwt = jwtService.generateToken(userDetails, user.getId());
-        var refreshToken = jwtService.generateRefreshToken(user.getId());  // Generate refresh token
+        var refreshToken = jwtService.generateRefreshToken(user.getId());
 
         return JwtAuthenticationResponseDTO.builder()
                 .token(jwt)
-                .refreshToken(refreshToken)  // Return refresh token
+                .refreshToken(refreshToken)
                 .build();
     }
 
@@ -60,16 +60,15 @@ public class AuthenticationService {
         UserDetails userDetails = userService.userDetailsService().loadUserByUsername(user.getEmail());
 
         var jwt = jwtService.generateToken(userDetails, user.getId());
-        var refreshToken = jwtService.generateRefreshToken(user.getId());  // Generate refresh token
+        var refreshToken = jwtService.generateRefreshToken(user.getId());
 
         UUID userId = jwtService.extractUserId(jwt);
 
-        // Log the userId to verify the extraction
         log.info("Current logged-in user ID: {}", userId);
 
         return JwtAuthenticationResponseDTO.builder()
                 .token(jwt)
-                .refreshToken(refreshToken)  // Return refresh token
+                .refreshToken(refreshToken)
                 .build();
     }
 }
