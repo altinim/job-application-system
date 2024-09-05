@@ -17,4 +17,5 @@ public interface UserService {
     List<UserResponseDTO> getAllUsers();
     void updateUser(UUID id, UserRequestDTO updateDTO);
     void deleteUser(UUID userId);
+    boolean existsByEmail(String email) ;
 }

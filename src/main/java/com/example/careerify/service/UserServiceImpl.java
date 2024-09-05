@@ -28,7 +28,9 @@ public class UserServiceImpl implements UserService {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
     }
-
+    public boolean existsByEmail(String email) {
+        return userRepository.findByEmail(email).isPresent();
+    }
     @Override
     public UserDetailsService userDetailsService() {
         return new UserDetailsService() {
