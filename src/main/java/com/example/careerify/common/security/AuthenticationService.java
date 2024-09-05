@@ -30,6 +30,10 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
 
     public JwtAuthenticationResponseDTO signUp(SignUpRequestDTO request) {
+        if (userService.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("User with this email already exists.");
+        }
+
         var user = User.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
@@ -42,7 +46,7 @@ public class AuthenticationService {
 
         UserDetails userDetails = userService.userDetailsService().loadUserByUsername(user.getEmail());
 
-        var jwt = jwtService.generateToken(userDetails, user.getId());
+        var jwt = jwtService.generateToken(userDetails, user.getId(), user.getRole());
         var refreshToken = jwtService.generateRefreshToken(user.getId());
 
         return JwtAuthenticationResponseDTO.builder()
@@ -59,7 +63,7 @@ public class AuthenticationService {
 
         UserDetails userDetails = userService.userDetailsService().loadUserByUsername(user.getEmail());
 
-        var jwt = jwtService.generateToken(userDetails, user.getId());
+        var jwt = jwtService.generateToken(userDetails, user.getId(), user.getRole());
         var refreshToken = jwtService.generateRefreshToken(user.getId());
 
         UUID userId = jwtService.extractUserId(jwt);

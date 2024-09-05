@@ -24,4 +24,5 @@ public interface JobPostingService {
     List<JobPostingResponseDTO> searchJobPostings(String title, Float salary, LocalDate postDate, String category, int page, int size);
     Page<JobPostingResponseDTO> getJobPostingByCurrentEmployer(Pageable pageable);
 
+
 }

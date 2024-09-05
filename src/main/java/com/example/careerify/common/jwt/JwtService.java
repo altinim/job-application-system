@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
+import com.example.careerify.common.enums.Role;
 import com.example.careerify.model.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -41,15 +42,16 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public String generateToken(UserDetails userDetails, UUID userId) {
+    public String generateToken(UserDetails userDetails, UUID userId, Role role) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
+        claims.put("role", role);
         return generateToken(claims, userDetails);
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String userName = extractUserName(token);
-        return (userName.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        return (userName.equals(userDetails.getUsername())) && isTokenExpired(token);
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolvers) {
@@ -69,7 +71,7 @@ public class JwtService {
     }
 
     private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+        return !extractExpiration(token).before(new Date());
     }
 
     private Date extractExpiration(String token) {
@@ -101,7 +103,7 @@ public class JwtService {
 
     public boolean isRefreshTokenValid(String token, UUID userId) {
         String tokenUserId = extractUserId(token).toString();
-        return (tokenUserId.equals(userId.toString())) && !isTokenExpired(token);
+        return (tokenUserId.equals(userId.toString())) && isTokenExpired(token);
     }
 
     public UUID extractUserId(String token) {

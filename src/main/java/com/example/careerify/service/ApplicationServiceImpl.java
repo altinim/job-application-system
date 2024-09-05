@@ -46,15 +46,46 @@ public class ApplicationServiceImpl implements ApplicationService {
         // Extract user ID from the token
         UUID userId = extractUserIdFromToken(authorizationHeader);
 
-        User user = getUserById(userId);
-        JobPosting jobPosting = getJobPostingById(jobListingId);
+        // Fetch user and job posting from the repository
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        JobPosting jobPosting = jobPostingRepository.findById(jobListingId)
+                .orElseThrow(() -> new RuntimeException("Job Posting not found"));
 
+        // Create and populate the Application entity
         Application application = new Application();
-        application.setUser(user);
         application.setJobListing(jobPosting);
+        application.setUser(user);
+        application.setStatus(ApplicationStatus.PENDING);
 
+        // Save the application
         Application savedApplication = applicationRepository.save(application);
-        return applicationMapper.mapApplicationToResponseDTO(savedApplication);
+
+        // Map the Application entity to ApplicationResponseDTO manually
+        ApplicationResponseDTO responseDTO = new ApplicationResponseDTO();
+        responseDTO.setId(savedApplication.getId());
+        responseDTO.setJobListingId(savedApplication.getJobListing().getId());
+        responseDTO.setApplicantId(savedApplication.getUser().getId());
+        responseDTO.setStatus(savedApplication.getStatus());
+
+        return responseDTO;
+    }
+    @Override
+
+    public List<ApplicationResponseDTO> getAllApplications() {
+        List<Application> applications = applicationRepository.findAll();
+
+        // Manually map list of Application entities to list of ApplicationResponseDTOs
+        return applications.stream()
+                .map(application -> {
+                    ApplicationResponseDTO dto = new ApplicationResponseDTO();
+                    dto.setId(application.getId());
+                    dto.setJobListingId(application.getJobListing().getId());
+                    dto.setApplicantId(application.getUser().getId());
+                    dto.setStatus(application.getStatus());
+                    return dto;
+                })
+                .toList();
     }
     private UUID extractUserIdFromToken(String authorizationHeader) {
         String token = authorizationHeader.replace("Bearer ", "");
@@ -66,12 +97,6 @@ public class ApplicationServiceImpl implements ApplicationService {
         Optional<Application> applicationOptional = applicationRepository.findById(applicationId);
         return applicationOptional.map(applicationMapper::mapApplicationToResponseDTO)
                 .orElseThrow(() -> new RuntimeException("Application not found with ID: " + applicationId));
-    }
-
-    @Override
-    public List<ApplicationResponseDTO> getAllApplications() {
-        List<Application> applications = applicationRepository.findAll();
-        return applicationMapper.mapApplicationsToResponseDTOs(applications);
     }
 
     @Override

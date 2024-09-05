@@ -30,6 +30,7 @@ public class JobPostingServiceImpl implements JobPostingService {
         this.jobPostingMapper = jobPostingMapper;
         this.jwtService = jwtService;
     }
+
     @Override
     public Page<JobPostingResponseDTO> getAllJobPostings(Pageable pageable) {
         Page<JobPosting> jobPostings = jobPostingRepository.findAll(pageable);
@@ -46,6 +47,8 @@ public class JobPostingServiceImpl implements JobPostingService {
 
         return jobPostingMapper.mapJobPostingToDTO(savedJobPosting);
     }
+
+
 
     @Override
     public JobPostingResponseDTO getJobPostingById(Long jobPostingId) {

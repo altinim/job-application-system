@@ -26,11 +26,10 @@ public class GlobalExceptionHandler {
         String errorMessage = fieldError != null ? fieldError.getDefaultMessage() : "Validation error";
         return ResponseEntity.badRequest().body(errorMessage);
     }
-    @ExceptionHandler(IllegalOperationException.class)
-    public ResponseEntity<Object> handleIllegalOperationException(IllegalOperationException e) {
-        return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
     }
-
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleInternalServerError(Exception e) {
         return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

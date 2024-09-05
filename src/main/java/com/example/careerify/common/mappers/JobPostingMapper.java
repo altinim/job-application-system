@@ -1,12 +1,15 @@
 package com.example.careerify.common.mappers;
 
+import com.example.careerify.common.dto.ApplicationResponseDTO;
 import com.example.careerify.common.dto.JobPostingRequestDTO;
 import com.example.careerify.common.dto.JobPostingResponseDTO;
+import com.example.careerify.model.Application;
 import com.example.careerify.model.JobPosting;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.PropertyMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
+import com.example.careerify.*;
 @Component
 public class JobPostingMapper {
 
@@ -15,7 +18,19 @@ public class JobPostingMapper {
     @Autowired
     public JobPostingMapper(ModelMapper modelMapper) {
         this.modelMapper = modelMapper;
+        configureMappings();
     }
+
+
+    private void configureMappings() {
+        modelMapper.addMappings(new PropertyMap<Application, ApplicationResponseDTO>() {
+            @Override
+            protected void configure() {
+                map().setApplicantId(source.getUser().getId());
+            }
+        });
+    }
+
 
     public JobPostingResponseDTO mapJobPostingToDTO(JobPosting jobPosting) {
         return modelMapper.map(jobPosting, JobPostingResponseDTO.class);

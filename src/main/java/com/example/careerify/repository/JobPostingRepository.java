@@ -3,6 +3,7 @@ package com.example.careerify.repository;
 import com.example.careerify.model.JobPosting;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,7 +16,6 @@ import java.util.UUID;
 @Repository
 public interface JobPostingRepository  extends JpaRepository<JobPosting,Long> {
     Page<JobPosting> findByEmployerId(UUID employerId, Pageable pageable);
-
 
     @Query("SELECT j FROM JobPosting j WHERE "
             + "(COALESCE(:title, '') = '' OR LOWER(j.title) LIKE LOWER(CONCAT('%', :title, '%'))) AND "
