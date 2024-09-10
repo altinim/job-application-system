@@ -23,10 +23,16 @@ public class JobPostingMapper {
 
 
     private void configureMappings() {
-        modelMapper.addMappings(new PropertyMap<Application, ApplicationResponseDTO>() {
+        modelMapper.addMappings(new PropertyMap<JobPosting, JobPostingResponseDTO>() {
             @Override
             protected void configure() {
-                map().setApplicantId(source.getUser().getId());
+                map().setUser(source.getUser().getId());
+            }
+        });
+        modelMapper.addMappings(new PropertyMap<JobPostingRequestDTO, JobPosting>() {
+            @Override
+            protected void configure() {
+                skip(destination.getUser());
             }
         });
     }

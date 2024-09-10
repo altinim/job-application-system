@@ -9,6 +9,7 @@ import java.util.UUID;
 public class UserResponseDTO {
     private UUID id;
     private String firstName;
+    private String email;
     private String lastName;
     private LocalDate dateOfBirth;
     private List<ApplicationResponseDTO> applications;

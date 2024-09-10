@@ -91,4 +91,15 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+    @OneToMany(mappedBy = "user")
+    private Collection<JobPosting> jobPosting;
+
+    public Collection<JobPosting> getJobPosting() {
+        return jobPosting;
+    }
+
+    public void setJobPosting(Collection<JobPosting> jobPosting) {
+        this.jobPosting = jobPosting;
+    }
 }

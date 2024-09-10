@@ -5,6 +5,7 @@ import com.example.careerify.common.dto.JobPostingResponseDTO;
 import com.example.careerify.common.jwt.JwtService;
 import com.example.careerify.common.mappers.JobPostingMapper;
 import com.example.careerify.model.JobPosting;
+import com.example.careerify.model.User;
 import com.example.careerify.repository.JobPostingRepository;
 import com.example.careerify.repository.UserRepository;
 import org.springframework.data.domain.Page;
@@ -25,10 +26,13 @@ public class JobPostingServiceImpl implements JobPostingService {
     private final JobPostingMapper jobPostingMapper;
     private final JwtService jwtService;
 
-    public JobPostingServiceImpl(JobPostingRepository jobPostingRepository, JobPostingMapper jobPostingMapper , JwtService jwtService){
+    private final UserRepository userRepository;
+
+    public JobPostingServiceImpl(JobPostingRepository jobPostingRepository, JobPostingMapper jobPostingMapper , JwtService jwtService, UserRepository userRepository){
         this.jobPostingRepository = jobPostingRepository;
         this.jobPostingMapper = jobPostingMapper;
         this.jwtService = jwtService;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -39,10 +43,12 @@ public class JobPostingServiceImpl implements JobPostingService {
     @Override
     public JobPostingResponseDTO createJobPosting(JobPostingRequestDTO requestDTO) {
         UUID currentUserId = jwtService.getCurrentUserId();
+        User user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         JobPosting jobPosting = jobPostingMapper.mapDTOToJobPosting(requestDTO);
-        jobPosting.setEmployerId(currentUserId);
 
+        jobPosting.setUser();
         JobPosting savedJobPosting = jobPostingRepository.save(jobPosting);
 
         return jobPostingMapper.mapJobPostingToDTO(savedJobPosting);
@@ -98,7 +104,7 @@ public class JobPostingServiceImpl implements JobPostingService {
     public Page<JobPostingResponseDTO> getJobPostingByCurrentEmployer(Pageable pageable) {
         UUID currentUserId = jwtService.getCurrentUserId();
 
-        Page<JobPosting> jobPostings = jobPostingRepository.findByEmployerId(currentUserId, pageable);
+        Page<JobPosting> jobPostings = jobPostingRepository.findByUserId(currentUserId, pageable);
         return jobPostings.map(jobPostingMapper::mapJobPostingToDTO);
     }
 

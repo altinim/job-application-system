@@ -43,10 +43,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
     @Override
     public ApplicationResponseDTO applyForAJobListing(String authorizationHeader, Long jobListingId) {
-        // Extract user ID from the token
         UUID userId = extractUserIdFromToken(authorizationHeader);
 
-        // Fetch user and job posting from the repository
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         JobPosting jobPosting = jobPostingRepository.findById(jobListingId)
@@ -58,7 +56,6 @@ public class ApplicationServiceImpl implements ApplicationService {
         application.setUser(user);
         application.setStatus(ApplicationStatus.PENDING);
 
-        // Save the application
         Application savedApplication = applicationRepository.save(application);
 
         // Map the Application entity to ApplicationResponseDTO manually
@@ -75,7 +72,6 @@ public class ApplicationServiceImpl implements ApplicationService {
     public List<ApplicationResponseDTO> getAllApplications() {
         List<Application> applications = applicationRepository.findAll();
 
-        // Manually map list of Application entities to list of ApplicationResponseDTOs
         return applications.stream()
                 .map(application -> {
                     ApplicationResponseDTO dto = new ApplicationResponseDTO();

@@ -26,7 +26,10 @@ public class JobPosting {
 
     private float salary;
 
-    private UUID employerId;
+
+    @ManyToOne
+    @JoinColumn(name = "user", nullable = false)
+    private User user;
 
     @OneToMany(mappedBy = "jobListing", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Application> applications;

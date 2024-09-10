@@ -1,6 +1,7 @@
 package com.example.careerify.model;
 
 import com.example.careerify.common.enums.ApplicationStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,10 +19,12 @@ public class Application {
     private Long id;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "job_listing_id", nullable = false)
     private JobPosting jobListing;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 

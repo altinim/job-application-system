@@ -12,7 +12,7 @@ public class JobPostingRequestDTO {
     private String title;
     private String description;
     private float salary;
-    private UUID employerId;
+    private UUID user;
     private LocalDate postDate;
     private LocalDate endDate;
     private String location;

@@ -14,7 +14,7 @@ public class JobPostingResponseDTO {
     private String title;
     private String description;
     private float salary;
-    private UUID employerId;
+    private UUID user;
     private List<ApplicationResponseDTO> applications;
     private LocalDate postDate;
     private LocalDate endDate;

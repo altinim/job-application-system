@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @Repository
 public interface JobPostingRepository  extends JpaRepository<JobPosting,Long> {
-    Page<JobPosting> findByEmployerId(UUID employerId, Pageable pageable);
+    Page<JobPosting> findByUserId(UUID employerId, Pageable pageable);
 
     @Query("SELECT j FROM JobPosting j WHERE "
             + "(COALESCE(:title, '') = '' OR LOWER(j.title) LIKE LOWER(CONCAT('%', :title, '%'))) AND "
