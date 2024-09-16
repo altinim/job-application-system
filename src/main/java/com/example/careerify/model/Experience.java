@@ -28,8 +28,9 @@ public class Experience {
     @NonNull
     private LocalDate startDate;
 
-    @NonNull
     private LocalDate endDate;
+
+    private boolean isPresent;
 
     @ManyToOne
     @JsonIgnore

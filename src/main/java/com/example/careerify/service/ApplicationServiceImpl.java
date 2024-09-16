@@ -47,42 +47,23 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        JobPosting jobPosting = jobPostingRepository.findById(jobListingId)
-                .orElseThrow(() -> new RuntimeException("Job Posting not found"));
 
-        // Create and populate the Application entity
+        JobPosting jobPosting = getJobPostingById(jobListingId);
+
         Application application = new Application();
         application.setJobListing(jobPosting);
-        application.setUser(user);
+        application.setApplicant(user);
         application.setStatus(ApplicationStatus.PENDING);
 
         Application savedApplication = applicationRepository.save(application);
-
-        // Map the Application entity to ApplicationResponseDTO manually
-        ApplicationResponseDTO responseDTO = new ApplicationResponseDTO();
-        responseDTO.setId(savedApplication.getId());
-        responseDTO.setJobListingId(savedApplication.getJobListing().getId());
-        responseDTO.setApplicantId(savedApplication.getUser().getId());
-        responseDTO.setStatus(savedApplication.getStatus());
-
-        return responseDTO;
+        return applicationMapper.mapApplicationToResponseDTO(savedApplication);
     }
     @Override
-
     public List<ApplicationResponseDTO> getAllApplications() {
         List<Application> applications = applicationRepository.findAll();
-
-        return applications.stream()
-                .map(application -> {
-                    ApplicationResponseDTO dto = new ApplicationResponseDTO();
-                    dto.setId(application.getId());
-                    dto.setJobListingId(application.getJobListing().getId());
-                    dto.setApplicantId(application.getUser().getId());
-                    dto.setStatus(application.getStatus());
-                    return dto;
-                })
-                .toList();
+        return applicationMapper.mapApplicationsToResponseDTOs(applications);
     }
+
     private UUID extractUserIdFromToken(String authorizationHeader) {
         String token = authorizationHeader.replace("Bearer ", "");
         return jwtService.extractUserId(token);

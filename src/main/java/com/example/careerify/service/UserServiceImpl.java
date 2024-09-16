@@ -50,7 +50,6 @@ public class UserServiceImpl implements UserService {
         newUser.setUpdatedAt(LocalDateTime.now());
         return userRepository.save(newUser);
     }
-
     @Override
     public UserResponseDTO createUser(UserRequestDTO userRequestDTO) {
         try {
@@ -91,7 +90,16 @@ public class UserServiceImpl implements UserService {
     public void updateUser(UUID id, UserRequestDTO updateDTO) throws EntityNotFoundException {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + id));
-        userMapper.updateUserFromDTO(updateDTO, existingUser);
+        existingUser.setFirstName(updateDTO.getFirstName());
+        existingUser.setLastName(updateDTO.getLastName());
+        existingUser.setDateOfBirth(updateDTO.getDateOfBirth());
+
         userRepository.save(existingUser);
+    }
+
+    public String getUserNameById(UUID userId) {
+        return userRepository.findById(userId)
+                .map(user -> user.getFirstName())
+                .orElse("Unknown");
     }
 }

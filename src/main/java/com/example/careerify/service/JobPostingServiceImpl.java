@@ -48,7 +48,7 @@ public class JobPostingServiceImpl implements JobPostingService {
 
         JobPosting jobPosting = jobPostingMapper.mapDTOToJobPosting(requestDTO);
 
-        jobPosting.setUser();
+        jobPosting.setUser(user);
         JobPosting savedJobPosting = jobPostingRepository.save(jobPosting);
 
         return jobPostingMapper.mapJobPostingToDTO(savedJobPosting);

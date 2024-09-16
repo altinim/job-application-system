@@ -21,4 +21,6 @@ public class ApplicationRequestDTO {
     @NotNull(message = "Applicant ID cannot be null")
     private UUID applicantId;
 
+
+
 }

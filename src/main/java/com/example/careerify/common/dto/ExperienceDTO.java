@@ -27,6 +27,8 @@ public class ExperienceDTO {
 
     private UUID user;
 
-    @NotNull(message = "End date cannot be null")
     private LocalDate endDate;
+
+    private boolean isPresent;
+
 }

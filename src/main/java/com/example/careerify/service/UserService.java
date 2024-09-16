@@ -18,4 +18,6 @@ public interface UserService {
     void updateUser(UUID id, UserRequestDTO updateDTO);
     void deleteUser(UUID userId);
     boolean existsByEmail(String email) ;
+
+    String getUserNameById(UUID userId);
 }

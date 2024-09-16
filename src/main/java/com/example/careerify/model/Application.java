@@ -24,9 +24,9 @@ public class Application {
     private JobPosting jobListing;
 
     @ManyToOne
-    @JsonIgnore
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "applicant_id", nullable = false)
+    private User applicant;
+
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
