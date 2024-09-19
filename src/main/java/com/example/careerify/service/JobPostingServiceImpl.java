@@ -11,6 +11,7 @@ import com.example.careerify.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -27,12 +28,14 @@ public class JobPostingServiceImpl implements JobPostingService {
     private final JwtService jwtService;
 
     private final UserRepository userRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    public JobPostingServiceImpl(JobPostingRepository jobPostingRepository, JobPostingMapper jobPostingMapper , JwtService jwtService, UserRepository userRepository){
+    public JobPostingServiceImpl(JobPostingRepository jobPostingRepository, JobPostingMapper jobPostingMapper , JwtService jwtService, UserRepository userRepository, SimpMessagingTemplate messagingTemplate){
         this.jobPostingRepository = jobPostingRepository;
         this.jobPostingMapper = jobPostingMapper;
         this.jwtService = jwtService;
         this.userRepository = userRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Override
@@ -50,6 +53,7 @@ public class JobPostingServiceImpl implements JobPostingService {
 
         jobPosting.setUser(user);
         JobPosting savedJobPosting = jobPostingRepository.save(jobPosting);
+        messagingTemplate.convertAndSend("/topic/notifications", "A new job posting was created: " + savedJobPosting.getTitle());
 
         return jobPostingMapper.mapJobPostingToDTO(savedJobPosting);
     }

@@ -43,13 +43,13 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf
-                        .disable()
-                )
+                .csrf(csrf -> csrf.disable()) // Disable CSRF for WebSockets
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(authorize -> authorize
+                        // Allow WebSocket handshake
+                        .requestMatchers("/api/v1/ws/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/sign-up", "/api/v1/sign-in").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/test/**").permitAll()
                         .anyRequest().authenticated()
