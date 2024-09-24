@@ -40,9 +40,10 @@ public class JobPostingServiceImpl implements JobPostingService {
 
     @Override
     public Page<JobPostingResponseDTO> getAllJobPostings(Pageable pageable) {
-        Page<JobPosting> jobPostings = jobPostingRepository.findAll(pageable);
+        Page<JobPosting> jobPostings = jobPostingRepository.findAllByOrderByPostDateDesc(pageable);
         return jobPostings.map(jobPostingMapper::mapJobPostingToDTO);
     }
+
     @Override
     public JobPostingResponseDTO createJobPosting(JobPostingRequestDTO requestDTO) {
         UUID currentUserId = jwtService.getCurrentUserId();

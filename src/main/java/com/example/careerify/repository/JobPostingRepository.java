@@ -30,4 +30,7 @@ public interface JobPostingRepository  extends JpaRepository<JobPosting,Long> {
             Pageable pageable
     );
 
+    Page<JobPosting> findAllByOrderByPostDateDesc(Pageable pageable);
+
+
 }

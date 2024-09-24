@@ -5,6 +5,7 @@ import com.example.careerify.common.dto.ApplicationResponseDTO;
 import com.example.careerify.common.enums.ApplicationStatus;
 import com.example.careerify.common.jwt.JwtService;
 import com.example.careerify.common.mappers.ApplicationMapper;
+import com.example.careerify.model.Notification;
 import com.example.careerify.model.User;
 import com.example.careerify.model.Application;
 import com.example.careerify.model.JobPosting;
@@ -13,6 +14,7 @@ import com.example.careerify.repository.JobPostingRepository;
 import com.example.careerify.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,16 +32,19 @@ public class ApplicationServiceImpl implements ApplicationService {
     private final JwtService jwtService;
 
 
+    private final SimpMessagingTemplate messagingTemplate;
+
     public ApplicationServiceImpl(ApplicationRepository applicationRepository,
                                   UserRepository userRepository,
                                   JobPostingRepository jobPostingRepository,
                                   ApplicationMapper applicationMapper,
-            JwtService jwtService){
+                                  JwtService jwtService,  SimpMessagingTemplate messagingTemplate){
         this.applicationRepository = applicationRepository;
         this.userRepository = userRepository;
         this.jobPostingRepository = jobPostingRepository;
         this.applicationMapper = applicationMapper;
         this.jwtService = jwtService;
+        this.messagingTemplate = messagingTemplate;
     }
     @Override
     public ApplicationResponseDTO applyForAJobListing(String authorizationHeader, Long jobListingId) {
@@ -56,6 +61,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         application.setStatus(ApplicationStatus.PENDING);
 
         Application savedApplication = applicationRepository.save(application);
+
+        String message = "Applicant " + user.getFirstName() + " applied for your job posting: " + jobPosting.getTitle();
+        Notification notification = new Notification(message, Long.toString(System.currentTimeMillis()));
+        this.messagingTemplate.convertAndSend("/topic/notifications/company", notification);
+
         return applicationMapper.mapApplicationToResponseDTO(savedApplication);
     }
     @Override

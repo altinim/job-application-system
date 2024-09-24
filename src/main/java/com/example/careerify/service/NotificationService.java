@@ -17,4 +17,10 @@ public class NotificationService {
         Notification notification = new Notification("New Job Posted: " + jobTitle, Long.toString(System.currentTimeMillis()));
         this.template.convertAndSend("/topic/notifications", notification);
     }
+
+    public void sendApplicantAppliedNotification(String companyId, String applicantName, String jobTitle) {
+        String message = "Applicant " + applicantName + " applied for your job posting: " + jobTitle;
+        Notification notification = new Notification(message, Long.toString(System.currentTimeMillis()));
+        this.template.convertAndSend("/topic/notifications/company", notification);
+    }
 }
