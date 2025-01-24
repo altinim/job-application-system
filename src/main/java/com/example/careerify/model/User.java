@@ -1,6 +1,5 @@
 package com.example.careerify.model;
 
-
 import com.example.careerify.common.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
@@ -15,25 +14,27 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-@MappedSuperclass
-@Data
-@SuperBuilder
+@Entity
+@Table(name = "users")
+@Getter
+@Setter
 @NoArgsConstructor
+@Builder
 @AllArgsConstructor
-@ToString
 public class User implements UserDetails {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(updatable = false)
     private UUID id;
+
     @NonNull
+    private String firstName;
 
-     String firstName;
     @NonNull
+    private String lastName;
 
-    String lastName;
-
-     String email;
+    private String email;
 
     @NonNull
     private String password;
@@ -46,6 +47,21 @@ public class User implements UserDetails {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "applicant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Application> applications;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Experience> experiences;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Skill> skills;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Education> educations;
+
+
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));
@@ -74,5 +90,16 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    @OneToMany(mappedBy = "user")
+    private Collection<JobPosting> jobPosting;
+
+    public Collection<JobPosting> getJobPosting() {
+        return jobPosting;
+    }
+
+    public void setJobPosting(Collection<JobPosting> jobPosting) {
+        this.jobPosting = jobPosting;
     }
 }

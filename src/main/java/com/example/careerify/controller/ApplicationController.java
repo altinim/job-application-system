@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/applications")
+@RequestMapping("/api/v1/applications")
 public class ApplicationController {
 
     private final ApplicationService applicationService;
@@ -24,12 +24,12 @@ public class ApplicationController {
         this.applicationService = applicationService;
     }
 
-    @PostMapping
-    public ResponseEntity<ApplicationResponseDTO> applyForAJobListing(
-            @RequestParam UUID applicantId,
-            @RequestParam Long jobListingId) {
-        ApplicationResponseDTO createdApplication = applicationService.applyForAJobListing(applicantId, jobListingId);
-        return ResponseEntity.created(URI.create("/api/applications/" + createdApplication.getId())).body(createdApplication);
+    @PostMapping("/apply/{jobListingId}")
+    public ResponseEntity<ApplicationResponseDTO> applyForJob(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @PathVariable Long jobListingId) {
+        ApplicationResponseDTO responseDTO = applicationService.applyForAJobListing(authorizationHeader, jobListingId);
+        return ResponseEntity.ok(responseDTO);
     }
 
 
@@ -59,12 +59,6 @@ public class ApplicationController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/status/{status}/applicant/{applicantId}")
-    public ResponseEntity<List<ApplicationResponseDTO>> getApplicationsByStatusAndApplicant(
-            @PathVariable ApplicationStatus status, @PathVariable UUID applicantId) {
-        List<ApplicationResponseDTO> applications = applicationService.getApplicationsByStatusAndApplicant(status, applicantId);
-        return ResponseEntity.ok(applications);
-    }
 
     @GetMapping("/jobListing/{jobListingId}")
     public ResponseEntity<List<ApplicationResponseDTO>> getApplicationsByJobListing(
@@ -87,20 +81,7 @@ public class ApplicationController {
         return ResponseEntity.ok(count);
     }
 
-    @GetMapping("/count/jobListing/{jobListingId}/applicant/{applicantId}")
-    public ResponseEntity<Long> countApplicationsByJobListingAndApplicant(
-            @PathVariable Long jobListingId, @PathVariable UUID applicantId) {
-        long count = applicationService.countApplicationsByJobListingAndApplicant(jobListingId, applicantId);
-        return ResponseEntity.ok(count);
-    }
 
-    @GetMapping("/jobListing/{jobListingId}/applicant/{applicantId}")
-    public ResponseEntity<List<ApplicationResponseDTO>> getApplicationsByJobListingAndApplicant(
-            @PathVariable Long jobListingId, @PathVariable UUID applicantId) {
-        List<ApplicationResponseDTO> applications = applicationService
-                .getApplicationsByJobListingAndApplicant(jobListingId, applicantId);
-        return ResponseEntity.ok(applications);
-    }
 
     @PatchMapping("/{applicationId}/updateStatus/{newStatus}")
     public ResponseEntity<Void> updateApplicationStatus(

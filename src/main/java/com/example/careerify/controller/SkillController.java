@@ -1,4 +1,5 @@
 package com.example.careerify.controller;
+import com.example.careerify.common.dto.SkillDTO;
 import com.example.careerify.common.dto.ExperienceDTO;
 import com.example.careerify.common.dto.SkillDTO;
 import com.example.careerify.service.SkillService;
@@ -8,13 +9,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/skill")
+@RequestMapping("api/v1/skills")
 public class SkillController {
     private final SkillService skillService;
 
@@ -33,18 +36,14 @@ public class SkillController {
         }
     }
 
-    @PostMapping("/create/{applicantId}")
-    public ResponseEntity<SkillDTO> createSkillForApplicant(
-            @PathVariable UUID applicantId,
-            @Valid @RequestBody SkillDTO skillDTO) {
-        try {
-            SkillDTO skillDTO1 = skillService.createSkillForApplicant(applicantId, skillDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(skillDTO1);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
-    }
 
+    @GetMapping("user/{userId}")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<List<SkillDTO>> getUserSkills(@PathVariable UUID userId) {
+
+        List<SkillDTO> userSkills = skillService.getSkillsByUserId(userId);
+        return new ResponseEntity<>(userSkills, HttpStatus.OK);
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<Object> getSkillById(@PathVariable UUID id) {

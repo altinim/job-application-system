@@ -4,13 +4,17 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter
+@Data
 public class ExperienceDTO {
+
+    UUID id;
 
     @NotBlank(message = "Title cannot be blank")
     private String title;
@@ -21,6 +25,10 @@ public class ExperienceDTO {
     @NotNull(message = "Start date cannot be null")
     private LocalDate startDate;
 
-    @NotNull(message = "End date cannot be null")
+    private UUID user;
+
     private LocalDate endDate;
+
+    private boolean isPresent;
+
 }

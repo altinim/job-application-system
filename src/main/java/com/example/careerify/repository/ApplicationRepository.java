@@ -3,7 +3,7 @@ package com.example.careerify.repository;
 import com.example.careerify.common.enums.ApplicationStatus;
 import com.example.careerify.model.Application;
 import com.example.careerify.model.JobPosting;
-import com.example.careerify.model.Applicant;
+import com.example.careerify.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,8 +11,6 @@ import java.util.List;
 
 @Repository
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
-    List<Application> findByStatusAndApplicant(ApplicationStatus status, Applicant applicant);
-
     List<Application> findByJobListing(JobPosting jobListing);
 
 
@@ -20,8 +18,5 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     long countByStatusAndJobListing(ApplicationStatus status, JobPosting jobListing);
 
-    long countByJobListingAndApplicant(JobPosting jobListing, Applicant applicant);
-
-    List<Application> findByJobListingAndApplicant(JobPosting jobListing, Applicant applicant);
 
 }

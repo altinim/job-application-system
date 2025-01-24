@@ -1,4 +1,5 @@
 package com.example.careerify.model;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
@@ -34,16 +35,7 @@ public class Education {
     private String grade;
 
     @ManyToOne
-    @JoinColumn(name = "applicant_id", nullable = false)
-    private Applicant applicant;
-
-    public Education(UUID id, String fieldOfStudy, String school, Date endDate, Date startDate, String location, String grade) {
-        this.id = id;
-        this.fieldOfStudy = fieldOfStudy;
-        this.school = school;
-        this.endDate = endDate;
-        this.startDate = startDate;
-        this.location = location;
-        this.grade = grade;
-    }
+    @JsonIgnore
+    @JoinColumn(name = "user", nullable = false)
+    private User user;
 }

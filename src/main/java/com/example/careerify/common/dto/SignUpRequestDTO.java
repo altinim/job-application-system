@@ -1,5 +1,6 @@
 package com.example.careerify.common.dto;
 
+import com.example.careerify.common.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,4 +15,5 @@ public class SignUpRequestDTO {
     String lastName;
     String email;
     String password;
+    Role role;
 }

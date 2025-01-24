@@ -11,8 +11,7 @@ import java.util.UUID;
 
 public interface ApplicationService {
 
-    ApplicationResponseDTO applyForAJobListing(UUID applicantId, Long jobListingId);
-
+    ApplicationResponseDTO applyForAJobListing(String authorizationHeader, Long jobListingId);
     ApplicationResponseDTO getApplicationById(Long applicationId);
 
     List<ApplicationResponseDTO> getAllApplications();
@@ -23,8 +22,6 @@ public interface ApplicationService {
 
     void deleteApplication(Long applicationId);
 
-    List<ApplicationResponseDTO> getApplicationsByStatusAndApplicant(ApplicationStatus status, UUID applicantId);
-
     List<ApplicationResponseDTO> getApplicationsByJobListing(Long jobListingId);
 
 
@@ -32,11 +29,7 @@ public interface ApplicationService {
 
     long countApplicationsByStatusAndJobListing(ApplicationStatus status, Long jobListingId);
 
-    long countApplicationsByJobListingAndApplicant(Long jobListingId, UUID applicantId);
-
-    List<ApplicationResponseDTO> getApplicationsByJobListingAndApplicant(Long jobListingId, UUID applicantId);
 
     void updateApplicationStatus(Long applicationId, ApplicationStatus newStatus);
-
 
 }

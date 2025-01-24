@@ -1,5 +1,6 @@
 package com.example.careerify.controller;
 
+import com.example.careerify.common.dto.JobPostingRequestDTO;
 import com.example.careerify.common.dto.JobPostingResponseDTO;
 import com.example.careerify.service.JobPostingService;
 import org.springframework.data.domain.Page;
@@ -8,13 +9,11 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
-@RequestMapping("/job-postings")
+@RequestMapping("api/v1/job-postings")
 public class JobPostingController {
 
     private final JobPostingService jobPostingService;
@@ -34,21 +33,23 @@ public class JobPostingController {
     }
 
     @PostMapping
-    public ResponseEntity<JobPostingResponseDTO> createJobPosting(@RequestBody JobPostingResponseDTO jobPostingResponseDTO) {
-        JobPostingResponseDTO createdJobPosting = jobPostingService.createJobPosting(jobPostingResponseDTO);
-        return new ResponseEntity<>(createdJobPosting, HttpStatus.CREATED);
+    public ResponseEntity<JobPostingResponseDTO> createJobPosting(
+            @RequestBody JobPostingRequestDTO jobPostingRequestDTO) {
+        JobPostingResponseDTO responseDTO = jobPostingService.createJobPosting(jobPostingRequestDTO);
+
+        return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
-    @PostMapping("/create/{employerId}")
-    public ResponseEntity<JobPostingResponseDTO> createJobPostingForEmployer(
-            @PathVariable UUID employerId,
-            @Valid @RequestBody JobPostingResponseDTO jobPostingResponseDTO) {
-        try {
-            JobPostingResponseDTO createdJobPosting = jobPostingService.createJobPostingForEmployeer(employerId, jobPostingResponseDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdJobPosting);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
+
+    @GetMapping("employer-job-listings")
+    public ResponseEntity<Page<JobPostingResponseDTO>> getJobPostingByCurrentEmployer(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = Pageable.ofSize(size).withPage(page);
+        Page<JobPostingResponseDTO> jobPostings = jobPostingService.getJobPostingByCurrentEmployer(pageable);
+        return new ResponseEntity<>(jobPostings, HttpStatus.OK);
     }
+
     @GetMapping("/{id}")
     public ResponseEntity<JobPostingResponseDTO> getJobPostingById(@PathVariable Long id) {
         JobPostingResponseDTO jobPostingResponseDTO = jobPostingService.getJobPostingById(id);
@@ -66,34 +67,18 @@ public class JobPostingController {
         jobPostingService.deleteJobPosting(id);
         return new ResponseEntity<>("Job Posting deleted successfully", HttpStatus.NO_CONTENT);
     }
-
-    @GetMapping("/employersJobPositions/{employerId}")
-    public ResponseEntity<List<JobPostingResponseDTO>> getAllJobPostingsByEmployerId(@PathVariable UUID employerId) {
-        List<JobPostingResponseDTO> jobPostings = jobPostingService.getAllJobPostingsByEmployerId(employerId);
-        return ResponseEntity.ok(jobPostings);
-    }
-    @GetMapping("/bytitle")
-    public ResponseEntity<List<JobPostingResponseDTO>> getJobPostingsByTitle(@RequestParam String keyword) {
-        List<JobPostingResponseDTO> jobPostings = jobPostingService.getJobPostingsByTitle(keyword);
-        return ResponseEntity.ok(jobPostings);
-    }
-
-    @GetMapping("/bysalary")
-    public ResponseEntity<List<JobPostingResponseDTO>> getJobPostingsBySalaryGreaterThan(@RequestParam float salary) {
-        List<JobPostingResponseDTO> jobPostings = jobPostingService.getJobPostingsBySalaryGreaterThan(salary);
-        return ResponseEntity.ok(jobPostings);
-    }
-
-    @GetMapping("/bypostdate")
-    public ResponseEntity<List<JobPostingResponseDTO>> getJobPostingsByPostDateAfter(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate postDate) {
-        List<JobPostingResponseDTO> jobPostings = jobPostingService.getJobPostingsByPostDateAfter(postDate);
-        return ResponseEntity.ok(jobPostings);
-    }
-
-
-    @GetMapping("/bycompanyname")
-    public ResponseEntity<List<JobPostingResponseDTO>> getJobPostingsByCompanyName(@RequestParam String companyName) {
-        List<JobPostingResponseDTO> jobPostings = jobPostingService.getJobPostingsByCompanyName(companyName);
+    @GetMapping("/search")
+    public ResponseEntity<List<JobPostingResponseDTO>> searchJobPostings(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) Float salary,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate postDate,
+            @RequestParam(required = false) String category,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        List<JobPostingResponseDTO> jobPostings = jobPostingService.searchJobPostings(
+                title, salary, postDate, category, page, size
+        );
         return ResponseEntity.ok(jobPostings);
     }
 }

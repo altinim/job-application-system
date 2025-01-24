@@ -1,10 +1,10 @@
 package com.example.careerify.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -28,11 +28,13 @@ public class Experience {
     @NonNull
     private LocalDate startDate;
 
-    @NonNull
     private LocalDate endDate;
 
+    private boolean isPresent;
+
     @ManyToOne
-    @JoinColumn(name = "applicant_id", nullable = false)
-    private Applicant applicant;
+    @JsonIgnore
+    @JoinColumn(name = "user", nullable = false)
+    private User user;
 
 }

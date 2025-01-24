@@ -1,37 +1,46 @@
 package com.example.careerify.service;
 import com.example.careerify.common.dto.SkillDTO;
+import com.example.careerify.common.dto.SkillDTO;
+import com.example.careerify.common.jwt.JwtService;
 import com.example.careerify.common.mappers.SkillMapper;
-import com.example.careerify.model.Applicant;
-import com.example.careerify.model.Education;
-import com.example.careerify.model.Experience;
 import com.example.careerify.model.Skill;
-import com.example.careerify.repository.ApplicantRepository;
+import com.example.careerify.model.User;
+import com.example.careerify.model.Skill;
 import com.example.careerify.repository.SkillRepository;
+import com.example.careerify.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 @Service
 public class SkillServiceImpl implements SkillService {
-    private SkillRepository skillRepository;
-    private SkillMapper skillMapper;
-    private ApplicantRepository applicantRepository;
+   final  private SkillRepository skillRepository;
+    final private SkillMapper skillMapper;
+    final private UserRepository userRepository;
+    private JwtService jwtService;
 
-    public SkillServiceImpl(SkillRepository skillRepository, SkillMapper skillMapper){
+    public SkillServiceImpl(SkillRepository skillRepository, SkillMapper skillMapper, UserRepository userRepository, JwtService jwtService){
         this.skillRepository = skillRepository;
         this.skillMapper = skillMapper;
+        this.userRepository = userRepository;
+        this.jwtService = jwtService;
     }
 
     @Override
     public SkillDTO createSkill(SkillDTO skillDTO) {
+
+        UUID currentUserId = jwtService.getCurrentUserId();
+
+        User user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         try {
             Skill skill = skillMapper.mapDTOToSkill(skillDTO);
-
+                skill.setUser(user);
             Skill savedSkill = skillRepository.save(skill);
 
             return skillMapper.mapSkillToDTO(savedSkill);
@@ -56,6 +65,16 @@ public class SkillServiceImpl implements SkillService {
     }
 
     @Override
+    public List<SkillDTO> getSkillsByUserId(UUID userId) {
+        List<Skill> userSkills = skillRepository.findAllByUserId(userId);
+        return userSkills.stream()
+                .map(skillMapper::mapSkillToDTO)
+                .toList();
+    }
+
+    
+
+    @Override
     public void deleteSkill(UUID skillId) {
         Skill existingSkill = skillRepository.findById(skillId)
                 .orElseThrow(() -> new EntityNotFoundException("Skill not found with ID: " + skillId));
@@ -63,20 +82,4 @@ public class SkillServiceImpl implements SkillService {
         skillRepository.delete(existingSkill);
     }
 
-    @Override
-    public SkillDTO createSkillForApplicant(UUID applicantId, SkillDTO skillDTO) {
-        try {
-            Applicant applicant = applicantRepository.findById(applicantId)
-                    .orElseThrow(() -> new EntityNotFoundException("Applicant not found with ID: " + applicantId));
-
-            Skill skill = skillMapper.mapDTOToSkill(skillDTO);
-            skill.setApplicant(applicant);
-
-            Skill skill1 = skillRepository.save(skill);
-
-            return skillMapper.mapSkillToDTO(skill1);
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Error creating skill. Illegal argument.", e);
-        }
-    }
 }

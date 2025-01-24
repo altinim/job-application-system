@@ -1,8 +1,7 @@
 package com.example.careerify.config;
 
-
 import com.example.careerify.common.security.JwtAuthenticationFilter;
-import com.example.careerify.service.ApplicantService;
+import com.example.careerify.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,7 +24,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final ApplicantService applicantService;
+    private final UserService userService;
     private final PasswordEncoder passwordEncoder;
 
     @Bean
@@ -36,27 +35,28 @@ public class SecurityConfig {
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(applicantService.userDetailsService());
+        authProvider.setUserDetailsService(userService.userDetailsService());
         authProvider.setPasswordEncoder(passwordEncoder);
         return authProvider;
     }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf
-                        .disable()
-                )
+                .csrf(csrf -> csrf.disable()) // Disable CSRF for WebSockets
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(HttpMethod.POST, "/api/v1/signup", "/api/v1/signin").permitAll()
+                        // Allow WebSocket handshake
+                        .requestMatchers("/api/v1/ws/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/sign-up", "/api/v1/sign-in").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/test/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .authenticationProvider(authenticationProvider()).addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-
 }

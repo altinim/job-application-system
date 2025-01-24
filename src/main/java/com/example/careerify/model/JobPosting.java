@@ -1,14 +1,14 @@
 package com.example.careerify.model;
 
-
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.constraints.Min;
 import java.time.LocalDate;
-
 import java.util.List;
+import java.util.UUID;
+
 @Entity
 @Table
 @Getter
@@ -26,19 +26,21 @@ public class JobPosting {
 
     private float salary;
 
+
     @ManyToOne
-    @JoinColumn(name = "employeer_id", nullable = false)
-    private Employeer employeer;
+    @JoinColumn(name = "user", nullable = false)
+    private User user;
 
     @OneToMany(mappedBy = "jobListing", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Application> applications;
-
 
     private LocalDate postDate;
 
     private LocalDate endDate;
 
-    private int vacancies;
+    private String location;
 
+    private String category;
 
+    private int openPositions;
 }

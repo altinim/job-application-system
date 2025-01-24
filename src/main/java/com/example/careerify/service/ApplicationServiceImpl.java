@@ -3,16 +3,18 @@ package com.example.careerify.service;
 import com.example.careerify.common.dto.ApplicationRequestDTO;
 import com.example.careerify.common.dto.ApplicationResponseDTO;
 import com.example.careerify.common.enums.ApplicationStatus;
+import com.example.careerify.common.jwt.JwtService;
 import com.example.careerify.common.mappers.ApplicationMapper;
-import com.example.careerify.model.Applicant;
+import com.example.careerify.model.Notification;
+import com.example.careerify.model.User;
 import com.example.careerify.model.Application;
 import com.example.careerify.model.JobPosting;
-import com.example.careerify.repository.ApplicantRepository;
 import com.example.careerify.repository.ApplicationRepository;
 import com.example.careerify.repository.JobPostingRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.careerify.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,30 +25,58 @@ import java.util.UUID;
 public class ApplicationServiceImpl implements ApplicationService {
 
     private final ApplicationRepository applicationRepository;
-    private final ApplicantRepository applicantRepository;
+    private final UserRepository userRepository;
     private final JobPostingRepository jobPostingRepository;
     private final ApplicationMapper applicationMapper;
 
-    @Autowired
+    private final JwtService jwtService;
+
+
+    private final SimpMessagingTemplate messagingTemplate;
+
     public ApplicationServiceImpl(ApplicationRepository applicationRepository,
-                                  ApplicantRepository applicantRepository,
+                                  UserRepository userRepository,
                                   JobPostingRepository jobPostingRepository,
-                                  ApplicationMapper applicationMapper) {
+                                  ApplicationMapper applicationMapper,
+                                  JwtService jwtService,  SimpMessagingTemplate messagingTemplate){
         this.applicationRepository = applicationRepository;
-        this.applicantRepository = applicantRepository;
+        this.userRepository = userRepository;
         this.jobPostingRepository = jobPostingRepository;
         this.applicationMapper = applicationMapper;
+        this.jwtService = jwtService;
+        this.messagingTemplate = messagingTemplate;
     }
     @Override
-    public ApplicationResponseDTO applyForAJobListing(UUID applicantId, Long jobListingId) {
-        Applicant applicant = getApplicantById(applicantId);
+    public ApplicationResponseDTO applyForAJobListing(String authorizationHeader, Long jobListingId) {
+        UUID userId = extractUserIdFromToken(authorizationHeader);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         JobPosting jobPosting = getJobPostingById(jobListingId);
+
         Application application = new Application();
-        application.setApplicant(applicant);
         application.setJobListing(jobPosting);
+        application.setApplicant(user);
+        application.setStatus(ApplicationStatus.PENDING);
 
         Application savedApplication = applicationRepository.save(application);
+
+        String message = "Applicant " + user.getFirstName() + " applied for your job posting: " + jobPosting.getTitle();
+        Notification notification = new Notification(message, Long.toString(System.currentTimeMillis()));
+        this.messagingTemplate.convertAndSend("/topic/notifications/company", notification);
+
         return applicationMapper.mapApplicationToResponseDTO(savedApplication);
+    }
+    @Override
+    public List<ApplicationResponseDTO> getAllApplications() {
+        List<Application> applications = applicationRepository.findAll();
+        return applicationMapper.mapApplicationsToResponseDTOs(applications);
+    }
+
+    private UUID extractUserIdFromToken(String authorizationHeader) {
+        String token = authorizationHeader.replace("Bearer ", "");
+        return jwtService.extractUserId(token);
     }
 
     @Override
@@ -54,12 +84,6 @@ public class ApplicationServiceImpl implements ApplicationService {
         Optional<Application> applicationOptional = applicationRepository.findById(applicationId);
         return applicationOptional.map(applicationMapper::mapApplicationToResponseDTO)
                 .orElseThrow(() -> new RuntimeException("Application not found with ID: " + applicationId));
-    }
-
-    @Override
-    public List<ApplicationResponseDTO> getAllApplications() {
-        List<Application> applications = applicationRepository.findAll();
-        return applicationMapper.mapApplicationsToResponseDTOs(applications);
     }
 
     @Override
@@ -83,15 +107,6 @@ public class ApplicationServiceImpl implements ApplicationService {
         applicationRepository.deleteById(applicationId);
     }
 
-
-
-    @Override
-    public List<ApplicationResponseDTO> getApplicationsByStatusAndApplicant(ApplicationStatus status, UUID applicantId) {
-        Applicant applicant = getApplicantById(applicantId);
-        List<Application> applications = applicationRepository.findByStatusAndApplicant(status, applicant);
-        return applicationMapper.mapApplicationsToResponseDTOs(applications);
-    }
-
     @Override
     public List<ApplicationResponseDTO> getApplicationsByJobListing(Long jobListingId) {
         JobPosting jobListing = getJobPostingById(jobListingId);
@@ -110,20 +125,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         return applicationRepository.countByStatusAndJobListing(status, jobListing);
     }
 
-    @Override
-    public long countApplicationsByJobListingAndApplicant(Long jobListingId, UUID applicantId) {
-        Applicant applicant = getApplicantById(applicantId);
-        JobPosting jobListing = getJobPostingById(jobListingId);
-        return applicationRepository.countByJobListingAndApplicant(jobListing, applicant);
-    }
-    @Override
-    public List<ApplicationResponseDTO> getApplicationsByJobListingAndApplicant(Long jobListingId, UUID applicantId) {
-        Applicant applicant = getApplicantById(applicantId);
-        JobPosting jobListing = getJobPostingById(jobListingId);
-        List<Application> applications = applicationRepository.findByJobListingAndApplicant(jobListing, applicant);
-        return applicationMapper.mapApplicationsToResponseDTOs(applications);
-    }
-
+    //helper methods
     @Override
     public void updateApplicationStatus(Long applicationId, ApplicationStatus newStatus) {
         Optional<Application> applicationOptional = applicationRepository.findById(applicationId);
@@ -136,12 +138,9 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new RuntimeException("Application not found with ID: " + applicationId);
         }
     }
-
-    //helper methods
-
-    private Applicant getApplicantById(UUID applicantId) {
-        return applicantRepository.findById(applicantId)
-                .orElseThrow(() -> new RuntimeException("Applicant not found with ID: " + applicantId));
+    private User getUserById(UUID userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
     }
     private JobPosting getJobPostingById(Long jobPostingId) {
         return jobPostingRepository.findById(jobPostingId)

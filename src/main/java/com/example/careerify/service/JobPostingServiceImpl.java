@@ -1,15 +1,17 @@
 package com.example.careerify.service;
 
+import com.example.careerify.common.dto.JobPostingRequestDTO;
 import com.example.careerify.common.dto.JobPostingResponseDTO;
+import com.example.careerify.common.jwt.JwtService;
 import com.example.careerify.common.mappers.JobPostingMapper;
-import com.example.careerify.model.Employeer;
 import com.example.careerify.model.JobPosting;
-import com.example.careerify.repository.EmployeerRepository;
+import com.example.careerify.model.User;
 import com.example.careerify.repository.JobPostingRepository;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
+import com.example.careerify.repository.UserRepository;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -23,31 +25,40 @@ public class JobPostingServiceImpl implements JobPostingService {
 
     private final JobPostingRepository jobPostingRepository;
     private final JobPostingMapper jobPostingMapper;
-    private final EmployeerRepository employeerRepository;
+    private final JwtService jwtService;
 
-    public JobPostingServiceImpl(JobPostingRepository jobPostingRepository, JobPostingMapper jobPostingMapper,EmployeerRepository employeerRepository){
+    private final UserRepository userRepository;
+    private final SimpMessagingTemplate messagingTemplate;
+
+    public JobPostingServiceImpl(JobPostingRepository jobPostingRepository, JobPostingMapper jobPostingMapper , JwtService jwtService, UserRepository userRepository, SimpMessagingTemplate messagingTemplate){
         this.jobPostingRepository = jobPostingRepository;
         this.jobPostingMapper = jobPostingMapper;
-        this.employeerRepository = employeerRepository;
+        this.jwtService = jwtService;
+        this.userRepository = userRepository;
+        this.messagingTemplate = messagingTemplate;
     }
+
     @Override
     public Page<JobPostingResponseDTO> getAllJobPostings(Pageable pageable) {
-        Page<JobPosting> jobPostings = jobPostingRepository.findAll(pageable);
+        Page<JobPosting> jobPostings = jobPostingRepository.findAllByOrderByPostDateDesc(pageable);
         return jobPostings.map(jobPostingMapper::mapJobPostingToDTO);
     }
+
     @Override
-    public JobPostingResponseDTO createJobPosting(JobPostingResponseDTO jobPostingResponseDTO) {
-        try {
-            JobPosting jobPosting = jobPostingMapper.mapDTOToJobPosting(jobPostingResponseDTO);
-            jobPosting.setPostDate(LocalDate.now());
+    public JobPostingResponseDTO createJobPosting(JobPostingRequestDTO requestDTO) {
+        UUID currentUserId = jwtService.getCurrentUserId();
+        User user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-            JobPosting savedJobPosting = jobPostingRepository.save(jobPosting);
+        JobPosting jobPosting = jobPostingMapper.mapDTOToJobPosting(requestDTO);
 
-            return jobPostingMapper.mapJobPostingToDTO(savedJobPosting);
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Error creating job posting. Illegal argument.", e);
-        }
+        jobPosting.setUser(user);
+        JobPosting savedJobPosting = jobPostingRepository.save(jobPosting);
+        messagingTemplate.convertAndSend("/topic/notifications", "A new job posting was created: " + savedJobPosting.getTitle());
+
+        return jobPostingMapper.mapJobPostingToDTO(savedJobPosting);
     }
+
 
 
     @Override
@@ -77,67 +88,29 @@ public class JobPostingServiceImpl implements JobPostingService {
         Optional<JobPosting> jobPostingOptional = jobPostingRepository.findById(jobPostingId);
         jobPostingOptional.ifPresent(jobPostingRepository::delete);
     }
-    @Transactional
-    @Override
-    public JobPostingResponseDTO createJobPostingForEmployeer(UUID employeerId, JobPostingResponseDTO jobPostingResponseDTO) {
-        try {
-            Employeer employeer = employeerRepository.findById(employeerId)
-                    .orElseThrow(() -> new EntityNotFoundException("Employeer not found with ID: " + employeerId));
 
-            JobPosting jobPosting = jobPostingMapper.mapDTOToJobPosting(jobPostingResponseDTO);
-            jobPosting.setPostDate(LocalDate.now());
-            jobPosting.setEmployeer(employeer);
-
-            JobPosting savedJobPosting = jobPostingRepository.save(jobPosting);
-
-            return jobPostingMapper.mapJobPostingToDTO(savedJobPosting);
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Error creating job posting. Illegal argument.", e);
-        }
-    }
 
     @Override
-    public List<JobPostingResponseDTO> getAllJobPostingsByEmployerId(UUID employerId) {
-        Employeer employer = employeerRepository.findById(employerId)
-                .orElseThrow(() -> new EntityNotFoundException("Employeer not found with ID: " + employerId));
+    public List<JobPostingResponseDTO> searchJobPostings(
+            String title, Float salary, LocalDate postDate, String category, int page, int size
+    ) {
+        Page<JobPosting> jobPostingPage = jobPostingRepository.findJobPostings(
+                title, salary, postDate, category, PageRequest.of(page, size)
+        );
 
-        List<JobPosting> jobPostings = jobPostingRepository.findByEmployeer(employer);
+        List<JobPosting> jobPostings = jobPostingPage.getContent();
+
         return jobPostings.stream()
                 .map(jobPostingMapper::mapJobPostingToDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<JobPostingResponseDTO> getJobPostingsByTitle(String keyword) {
-        List<JobPosting> jobPostings = jobPostingRepository.findByTitleContaining(keyword);
-        return jobPostings.stream()
-                .map(jobPostingMapper::mapJobPostingToDTO)
-                .collect(Collectors.toList());
-    }
+    public Page<JobPostingResponseDTO> getJobPostingByCurrentEmployer(Pageable pageable) {
+        UUID currentUserId = jwtService.getCurrentUserId();
 
-    @Override
-    public List<JobPostingResponseDTO> getJobPostingsBySalaryGreaterThan(float salary) {
-        List<JobPosting> jobPostings = jobPostingRepository.findBySalaryGreaterThan(salary);
-        return jobPostings.stream()
-                .map(jobPostingMapper::mapJobPostingToDTO)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<JobPostingResponseDTO> getJobPostingsByPostDateAfter(LocalDate postDate) {
-        List<JobPosting> jobPostings = jobPostingRepository.findByPostDateAfter(postDate);
-        return jobPostings.stream()
-                .map(jobPostingMapper::mapJobPostingToDTO)
-                .collect(Collectors.toList());
-    }
-
-
-    @Override
-    public List<JobPostingResponseDTO> getJobPostingsByCompanyName(String companyName) {
-        List<JobPosting> jobPostings = jobPostingRepository.findByEmployeerCompanyName(companyName);
-        return jobPostings.stream()
-                .map(jobPostingMapper::mapJobPostingToDTO)
-                .collect(Collectors.toList());
+        Page<JobPosting> jobPostings = jobPostingRepository.findByUserId(currentUserId, pageable);
+        return jobPostings.map(jobPostingMapper::mapJobPostingToDTO);
     }
 
 }
